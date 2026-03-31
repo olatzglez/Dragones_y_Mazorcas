@@ -1,0 +1,33 @@
+{
+  "name": "individualjs",
+  "version": "1.0.0",
+  "description": "## 📌 Descripción del proyecto",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/olatzglez/IndividualJS.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/olatzglez/IndividualJS/issues"
+  },
+  "homepage": "https://github.com/olatzglez/IndividualJS#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "fast-xml-parser": "^5.5.9",
+    "http-proxy-middleware": "^3.0.5",
+    "node-fetch": "^3.3.2"
+  },
+  "type": "commonjs"
+}

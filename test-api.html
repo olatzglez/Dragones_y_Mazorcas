@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Test BGG API</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    input {
+      padding: 8px;
+      width: 250px;
+    }
+
+    button {
+      padding: 8px 12px;
+      margin-left: 8px;
+      cursor: pointer;
+    }
+
+    .game {
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🎲 BoardGameGeek API Test</h1>
+
+  <input type="text" id="searchInput" placeholder="Buscar juego..." />
+  <button id="searchBtn">Buscar</button>
+
+  <div id="results"></div>
+
+  <script type="module">
+    import ApiService from "./js/api/apiService.js";
+
+    const api = new ApiService();
+
+    const input = document.getElementById("searchInput");
+    const button = document.getElementById("searchBtn");
+    const resultsDiv = document.getElementById("results");
+
+    button.addEventListener("click", async () => {
+      const query = input.value.trim();
+      if (!query) return;
+
+      resultsDiv.innerHTML = "Cargando...";
+
+      try {
+        const games = await api.searchGamesSimplified(query);
+
+        if (!games.length) {
+          resultsDiv.innerHTML = "No se encontraron resultados";
+          return;
+        }
+
+        resultsDiv.innerHTML = "";
+
+        games.forEach(game => {
+          const div = document.createElement("div");
+          div.classList.add("game");
+
+          div.innerHTML = `
+            <h3>${game.name}</h3>
+            <p><strong>Año:</strong> ${game.year}</p>
+            <p><strong>ID:</strong> ${game.id}</p>
+          `;
+
+          resultsDiv.appendChild(div);
+        });
+
+      } catch (error) {
+        resultsDiv.innerHTML = "Error al cargar datos";
+        console.error(error);
+      }
+    });
+  </script>
+
+</body>
+</html>
