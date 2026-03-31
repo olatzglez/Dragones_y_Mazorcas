@@ -1,0 +1,98 @@
+@import url('./styles.css');
+
+/* HEADER */
+.header {
+  background: var(--white);
+  color: var(--black);
+  padding: 10px;
+}
+
+.header__container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav {
+  display: flex;
+  gap: 15px;
+}
+
+.menu-toggle {
+  display: none;
+  font-size: 20px;
+}
+
+/* 📱 Responsive */
+@media (max-width: 768px) {
+  .nav {
+    display: none;
+    flex-direction: column;
+  }
+
+  .nav.active {
+    display: flex;
+  }
+
+  .menu-toggle {
+    display: block;
+  }
+}
+/* NAVBAR */
+
+
+/* BOTONES / BUTTONS /*
+
+
+/* CARDS DE JUEGOS */
+
+.boardgame-card {
+  border: 1px solid var(--bg-light);
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 12px;
+  max-width: 600px;
+}
+
+.boardgame-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.boardgame-card__title {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.boardgame-card__id {
+  font-size: 0.8rem;
+  color: var(--black);
+}
+
+.boardgame-card__meta {
+  display: flex;
+  gap: 16px;
+  margin: 8px 0;
+  font-size: 0.9rem;
+}
+
+.boardgame-card__description {
+  font-size: 0.9rem;
+  color: var(--grey);
+  line-height: 1.5;
+}
+
+.boardgame-card__link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: var(--primary-blue);
+  text-decoration: none;
+}
+
+.boardgame-card__link:hover {
+  text-decoration: underline;
+}
+
+/* FOOTER */
