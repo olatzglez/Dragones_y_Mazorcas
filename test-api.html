@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Test BGG API</title>
+  <link rel="stylesheet" href="./src/css/styles.css" />
+  <link rel="stylesheet" href="./src/css/components.css" />
+  <link rel="stylesheet" href="./src/css/layout.css" />
+  <link rel="stylesheet" href="./src/css/darkmode.css" />
+</head>
+
+<body>
+
+  <h1>🎲 BoardGameGeek API Test</h1>
+
+  <input type="text" id="searchInput" placeholder="Buscar juego..." />
+  <button id="searchBtn">Buscar</button>
+  <button id="backBtn">← Volver a resultados</button>
+
+  <div id="results"></div>
+  <div id="detail"></div>
+
+  <script type="module">
+    import ApiService from "./js/api/apiService.js";
+    import BoardGame from "./js/BoardGame.js";
+
+    const api = new ApiService();
+
+    const input      = document.getElementById("searchInput");
+    const searchBtn  = document.getElementById("searchBtn");
+    const backBtn    = document.getElementById("backBtn");
+    const resultsDiv = document.getElementById("results");
+    const detailDiv  = document.getElementById("detail");
+
+    // ─── Búsqueda ────────────────────────────────────────────────
+    searchBtn.addEventListener("click", async () => {
+      const query = input.value.trim();
+      if (!query) return;
+
+      resultsDiv.innerHTML = "Cargando...";
+      detailDiv.innerHTML  = "";
+      backBtn.style.display = "none";
+
+      try {
+        const games = await api.searchGamesSimplified(query);
+
+        if (!games.length) {
+          resultsDiv.innerHTML = "No se encontraron resultados.";
+          return;
+        }
+
+        resultsDiv.innerHTML = "";
+
+        games.forEach(game => {
+          const div = document.createElement("div");
+          div.classList.add("game-result");
+
+          div.innerHTML = `
+            <h3>${game.name}</h3>
+            <p><strong>Año:</strong> ${game.year}</p>
+            <p><strong>ID:</strong> ${game.id}</p>
+          `;
+
+          // Al hacer clic carga el detalle del juego
+          div.addEventListener("click", () => loadDetail(game.id));
+
+          resultsDiv.appendChild(div);
+        });
+
+      } catch (error) {
+        resultsDiv.innerHTML = "Error al cargar datos.";
+        console.error(error);
+      }
+    });
+
+    // ─── Detalle ──────────────────────────────────────────────────
+    async function loadDetail(id) {
+      detailDiv.innerHTML  = "Cargando detalle...";
+      resultsDiv.style.display = "none";
+      backBtn.style.display    = "inline-block";
+
+      try {
+        const gameData = await api.getGameSimplified(id);
+
+        if (!gameData) {
+          detailDiv.innerHTML = "No se encontró información del juego.";
+          return;
+        }
+
+        detailDiv.innerHTML = "";
+        const boardGame = new BoardGame(gameData);
+        boardGame.appendTo(detailDiv);
+
+      } catch (error) {
+        detailDiv.innerHTML = "Error al cargar el detalle.";
+        console.error(error);
+      }
+    }
+
+    // ─── Volver ───────────────────────────────────────────────────
+    backBtn.addEventListener("click", () => {
+      detailDiv.innerHTML      = "";
+      resultsDiv.style.display = "block";
+      backBtn.style.display    = "none";
+    });
+
+  </script>
+
+</body>
+</html>
