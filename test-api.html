@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Test BGG API</title>
+  <link rel="stylesheet" href="./src/css/components.css" />
+</head>
+
+<body>
+
+  <h1>🎲 BoardGameGeek API Test</h1>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Buscar juego..." />
+    <button id="searchBtn">Buscar</button>
+  </div>
+
+  <div id="status" class="status-msg"></div>
+  <div id="results"></div>
+
+  <script type="module">
+    import ApiService from "./js/api/apiService.js";
+
+    const api        = new ApiService();
+    const input      = document.getElementById("searchInput");
+    const button     = document.getElementById("searchBtn");
+    const resultsDiv = document.getElementById("results");
+    const statusDiv  = document.getElementById("status");
+
+    // ── Búsqueda ──────────────────────────────────────
+    button.addEventListener("click", async () => {
+      const query = input.value.trim();
+      if (!query) return;
+
+      resultsDiv.innerHTML = "";
+      statusDiv.textContent = "Buscando...";
+
+      try {
+        const games = await api.searchGamesSimplified(query);
+
+        if (!games.length) {
+          statusDiv.textContent = "No se encontraron resultados.";
+          return;
+        }
+
+        statusDiv.textContent = `${games.length} resultados. Haz clic en un juego para ver el detalle.`;
+
+        games.forEach(game => {
+          const card = document.createElement("div");
+          card.classList.add("boardgame-card");
+
+          card.innerHTML = `
+            <div class="boardgame-card__header">
+              <div class="boardgame-card__info">
+                <h3 class="boardgame-card__title">${game.name ?? "Sin nombre"}</h3>
+                <div class="boardgame-card__meta">
+                  <span>Año: ${game.year ?? "—"}</span>
+                  <span>ID: ${game.id}</span>
+                </div>
+              </div>
+              <span class="boardgame-card__chevron">&#8964;</span>
+            </div>
+            <div class="boardgame-card__detail"></div>
+          `;
+
+          const header      = card.querySelector(".boardgame-card__header");
+          const detailPanel = card.querySelector(".boardgame-card__detail");
+          const chevron     = card.querySelector(".boardgame-card__chevron");
+
+          header.addEventListener("click", () => {
+            const isOpen = detailPanel.classList.toggle("open");
+            chevron.classList.toggle("open", isOpen);
+
+            if (isOpen && detailPanel.innerHTML === "") {
+              loadDetail(game.id, detailPanel);
+            }
+          });
+
+          resultsDiv.appendChild(card);
+        });
+
+      } catch (error) {
+        statusDiv.textContent = "Error al buscar. ¿Está arrancado el servidor?";
+        console.error(error);
+      }
+    });
+
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") button.click();
+    });
+
+    // ── Detalle dentro de la tarjeta ─────────────────
+    async function loadDetail(id, panel) {
+      panel.innerHTML = `<p class="loading">Cargando detalle...</p>`;
+
+      try {
+        const g = await api.getGameSimplified(id);
+
+        const players  = g.minPlayers && g.maxPlayers ? `${g.minPlayers}–${g.maxPlayers}` : g.minPlayers ?? "—";
+        const playtime = g.minPlaytime && g.maxPlaytime ? `${g.minPlaytime}–${g.maxPlaytime} min` : g.minPlaytime ? `${g.minPlaytime} min` : "—";
+        const rating   = g.rating?.average ? parseFloat(g.rating.average).toFixed(1) : "—";
+        const votes    = g.rating?.votes   ? Number(g.rating.votes).toLocaleString()  : "—";
+        const weight   = g.rating?.weight  ? parseFloat(g.rating.weight).toFixed(2)   : "—";
+        const rank     = g.rank   ? `#${g.rank}` : "—";
+        const age      = g.minAge ? `+${g.minAge} años` : "—";
+        const language = g.language?.join(", ") ?? "No especificado";
+
+        const desc = (g.description ?? "Sin descripción.")
+          .replace(/&amp;/g, "&")
+          .replace(/&mdash;/g, "—")
+          .replace(/&#10;/g, " ")
+          .trim()
+          .substring(0, 500) + "...";
+
+        panel.innerHTML = `
+          <div class="clearfix">
+            ${g.image ? `<img class="boardgame-card__cover" src="${g.image}" alt="${g.name}"/>` : ""}
+
+            <p><span class="label">ID:</span> ${g.id}</p>
+            <p><span class="label">Año:</span> ${g.year ?? "—"}</p>
+            <p><span class="label">Jugadores:</span> ${players}</p>
+            <p><span class="label">Duración:</span> ${playtime}</p>
+            <p><span class="label">Edad mínima:</span> ${age}</p>
+            <p><span class="label">Puntuación media:</span> ★ ${rating} &nbsp;(${votes} votos)</p>
+            <p><span class="label">Peso/Complejidad:</span> ${weight} / 5</p>
+            <p><span class="label">Ranking BGG:</span> ${rank}</p>
+            <p><span class="label">Idioma:</span> ${language}</p>
+
+            <p class="boardgame-card__section-title">Descripción</p>
+            <p class="boardgame-card__description">${desc}</p>
+
+            <p class="boardgame-card__section-title">Categorías</p>
+            <div>${(g.categories ?? []).map(c => `<span class="tag">${c}</span>`).join("") || "—"}</div>
+
+            <p class="boardgame-card__section-title">Mecánicas</p>
+            <div>${(g.mechanics ?? []).map(m => `<span class="tag">${m}</span>`).join("") || "—"}</div>
+
+            <p class="boardgame-card__section-title">Editoriales</p>
+            <div>${(g.publishers ?? []).slice(0, 10).map(p => `<span class="tag">${p}</span>`).join("") || "—"}</div>
+          </div>
+        `;
+
+      } catch (error) {
+        panel.innerHTML = `<p class="loading">Error al cargar el detalle.</p>`;
+        console.error(error);
+      }
+    }
+  </script>
+
+</body>
+</html>

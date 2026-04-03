@@ -112,7 +112,7 @@ js/
 
 ## 👨‍💻 Autora
 
-# Olatz González
+### Olatz González
 
 Ejercicio de JavaScript para el Bootcamp de Desarrollo Full Stack.
 
