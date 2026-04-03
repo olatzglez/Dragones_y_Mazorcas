@@ -3,13 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Test BGG API</title>
+  <title>BGG Explorer — Búsqueda</title>
 
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
 
     input  { padding: 8px; width: 250px; }
     button { padding: 8px 12px; margin-left: 8px; cursor: pointer; }
+
+    /* ── Barra superior ── */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .top-bar h1 { font-size: 1.4rem; margin: 0; }
+
+    .btn-favorites-link {
+      padding: 8px 16px;
+      background: #f39c12;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-decoration: none;
+    }
+    .btn-favorites-link:hover { background: #d68910; }
 
     /* ── Tarjeta ── */
     .game-card {
@@ -20,7 +42,6 @@
       overflow: hidden;
     }
 
-    /* Cabecera clicable */
     .game-card-header {
       display: flex;
       align-items: center;
@@ -31,33 +52,32 @@
     }
     .game-card-header:hover { background: #fafafa; }
 
-    /* Thumbnail */
-    .game-card-header img.thumb {
-      width: 70px;
-      height: 55px;
-      object-fit: cover;
-      border-radius: 6px;
-      background: #eee;
-      flex-shrink: 0;
-    }
-
-    /* Texto central */
-    .game-card-header .card-info {
-      flex: 1;
-    }
+    .game-card-header .card-info { flex: 1; }
     .game-card-header h3 { margin: 0 0 4px; font-size: 1rem; }
     .game-card-header p  { margin: 0; font-size: 0.85rem; color: #666; }
 
-    /* Icono chevron */
+    .btn-favorite-header {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      background: #1B9CFC;
+      color: white;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .btn-favorite-header:hover       { background: #0e7de0; }
+    .btn-favorite-header.saved       { background: #e74c3c; }
+    .btn-favorite-header.saved:hover { background: #c0392b; }
+
     .chevron {
       font-size: 1.2rem;
       color: #999;
       transition: transform 0.3s ease;
       flex-shrink: 0;
     }
-    .chevron.open {
-      transform: rotate(180deg);
-    }
+    .chevron.open { transform: rotate(180deg); }
 
     /* ── Panel de detalle ── */
     .game-detail {
@@ -102,7 +122,10 @@
 
 <body>
 
-  <h1>🎲 BoardGameGeek API Test</h1>
+  <div class="top-bar">
+    <h1>🎲 BGG Explorer</h1>
+    <a class="btn-favorites-link" href="favorites.html">⭐ Mis favoritos (<span id="fav-count">0</span>)</a>
+  </div>
 
   <input type="text" id="searchInput" placeholder="Buscar juego..." />
   <button id="searchBtn">Buscar</button>
@@ -112,12 +135,24 @@
 
   <script type="module">
     import ApiService from "./js/api/apiService.js";
+    import BoardGame  from "./js/classes/BoardGame.js";
+    import Favorites  from "./js/classes/Favorites.js";
 
-    const api        = new ApiService();
+    const api       = new ApiService();
+    const favorites = new Favorites();
+
     const input      = document.getElementById("searchInput");
     const button     = document.getElementById("searchBtn");
     const resultsDiv = document.getElementById("results");
     const statusDiv  = document.getElementById("status");
+    const favCount   = document.getElementById("fav-count");
+
+    // Actualiza el contador de favoritos en el enlace
+    function updateFavCount() {
+      favCount.textContent = favorites.count();
+    }
+
+    updateFavCount();
 
     // ── Búsqueda ──────────────────────────────────────
     button.addEventListener("click", async () => {
@@ -138,21 +173,21 @@
         statusDiv.textContent = `${games.length} resultados. Haz clic en un juego para ver el detalle.`;
 
         games.forEach(game => {
+          const isFav    = favorites.isFavorite(game.id);
+          const btnLabel = isFav ? "❌ Quitar" : "⭐ Favorito";
+          const btnClass = isFav ? "btn-favorite-header saved" : "btn-favorite-header";
+
           const card = document.createElement("div");
           card.classList.add("game-card");
 
           card.innerHTML = `
             <div class="game-card-header">
-              <img
-                class="thumb"
-                src="${game.thumbnail || ""}"
-                alt="${game.name}"
-                onerror="this.style.visibility='hidden'"
-              />
+
               <div class="card-info">
                 <h3>${game.name ?? "Sin nombre"}</h3>
                 <p>Año: ${game.year ?? "—"} &nbsp;|&nbsp; ID: ${game.id}</p>
               </div>
+              <button class="${btnClass}" data-id="${game.id}">${btnLabel}</button>
               <span class="chevron">&#8964;</span>
             </div>
             <div class="game-detail"></div>
@@ -161,14 +196,19 @@
           const header      = card.querySelector(".game-card-header");
           const detailPanel = card.querySelector(".game-detail");
           const chevron     = card.querySelector(".chevron");
+          const btnFav      = card.querySelector(".btn-favorite-header");
 
           header.addEventListener("click", () => {
             const isOpen = detailPanel.classList.toggle("open");
             chevron.classList.toggle("open", isOpen);
-
             if (isOpen && detailPanel.innerHTML === "") {
               loadDetail(game.id, detailPanel);
             }
+          });
+
+          btnFav.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            await toggleFavorite(game.id, btnFav);
           });
 
           resultsDiv.appendChild(card);
@@ -184,54 +224,34 @@
       if (e.key === "Enter") button.click();
     });
 
-    // ── Detalle dentro de la tarjeta ─────────────────
+    // ── Detalle ───────────────────────────────────────
     async function loadDetail(id, panel) {
       panel.innerHTML = `<p class="loading">Cargando detalle...</p>`;
 
       try {
-        const g = await api.getGameSimplified(id);
-
-        const players  = g.minPlayers && g.maxPlayers ? `${g.minPlayers}–${g.maxPlayers}` : g.minPlayers ?? "—";
-        const playtime = g.minPlaytime && g.maxPlaytime ? `${g.minPlaytime}–${g.maxPlaytime} min` : g.minPlaytime ? `${g.minPlaytime} min` : "—";
-        const rating   = g.rating?.average ? parseFloat(g.rating.average).toFixed(1) : "—";
-        const votes    = g.rating?.votes   ? Number(g.rating.votes).toLocaleString()  : "—";
-        const weight   = g.rating?.weight  ? parseFloat(g.rating.weight).toFixed(2)   : "—";
-        const rank     = g.rank   ? `#${g.rank}` : "—";
-        const age      = g.minAge ? `+${g.minAge} años` : "—";
-        const language = g.language?.join(", ") ?? "No especificado";
-
-        const desc = (g.description ?? "Sin descripción.")
-          .replace(/&amp;/g, "&")
-          .replace(/&mdash;/g, "—")
-          .replace(/&#10;/g, " ")
-          .trim()
-          .substring(0, 500) + "...";
+        const data = await api.getGameSimplified(id);
+        const game = new BoardGame(data);
 
         panel.innerHTML = `
           <div class="clearfix">
-            ${g.image ? `<img class="cover" src="${g.image}" alt="${g.name}"/>` : ""}
-
-            <p><span class="label">ID:</span> ${g.id}</p>
-            <p><span class="label">Año:</span> ${g.year ?? "—"}</p>
-            <p><span class="label">Jugadores:</span> ${players}</p>
-            <p><span class="label">Duración:</span> ${playtime}</p>
-            <p><span class="label">Edad mínima:</span> ${age}</p>
-            <p><span class="label">Puntuación media:</span> ★ ${rating} &nbsp;(${votes} votos)</p>
-            <p><span class="label">Peso/Complejidad:</span> ${weight} / 5</p>
-            <p><span class="label">Ranking BGG:</span> ${rank}</p>
-            <p><span class="label">Idioma:</span> ${language}</p>
-
+            ${game.image ? `<img class="cover" src="${game.image}" alt="${game.name}"/>` : ""}
+            <p><span class="label">ID:</span> ${game.id}</p>
+            <p><span class="label">Año:</span> ${game.year ?? "—"}</p>
+            <p><span class="label">Jugadores:</span> ${game.getPlayers()}</p>
+            <p><span class="label">Duración:</span> ${game.getPlaytime()}</p>
+            <p><span class="label">Edad mínima:</span> ${game.getMinAge()}</p>
+            <p><span class="label">Puntuación media:</span> ★ ${game.getRating()} &nbsp;(${game.getVotes()} votos)</p>
+            <p><span class="label">Peso/Complejidad:</span> ${game.getWeight()}</p>
+            <p><span class="label">Ranking BGG:</span> ${game.getRank()}</p>
+            <p><span class="label">Idioma:</span> ${game.language?.join(", ") || "No especificado"}</p>
             <p class="section-title">Descripción</p>
-            <p style="color:#555; line-height:1.6">${desc}</p>
-
+            <p style="color:#555; line-height:1.6">${game.getDescription()}</p>
             <p class="section-title">Categorías</p>
-            <div>${(g.categories ?? []).map(c => `<span class="tag">${c}</span>`).join("") || "—"}</div>
-
+            <div>${game.categories.map(c => `<span class="tag">${c}</span>`).join("") || "—"}</div>
             <p class="section-title">Mecánicas</p>
-            <div>${(g.mechanics ?? []).map(m => `<span class="tag">${m}</span>`).join("") || "—"}</div>
-
+            <div>${game.mechanics.map(m => `<span class="tag">${m}</span>`).join("") || "—"}</div>
             <p class="section-title">Editoriales</p>
-            <div>${(g.publishers ?? []).slice(0, 10).map(p => `<span class="tag">${p}</span>`).join("") || "—"}</div>
+            <div>${game.publishers.slice(0, 10).map(p => `<span class="tag">${p}</span>`).join("") || "—"}</div>
           </div>
         `;
 
@@ -240,6 +260,31 @@
         console.error(error);
       }
     }
+
+    // ── Favoritos ─────────────────────────────────────
+    async function toggleFavorite(id, btn) {
+      if (favorites.isFavorite(id)) {
+        favorites.remove(id);
+        btn.textContent = "⭐ Favorito";
+        btn.classList.remove("saved");
+      } else {
+        btn.textContent = "...";
+        btn.disabled = true;
+        try {
+          const data = await api.getGameSimplified(id);
+          const game = new BoardGame(data);
+          favorites.add(game);
+          btn.textContent = "❌ Quitar";
+          btn.classList.add("saved");
+        } catch {
+          btn.textContent = "⭐ Favorito";
+        } finally {
+          btn.disabled = false;
+        }
+      }
+      updateFavCount();
+    }
+
   </script>
 
 </body>

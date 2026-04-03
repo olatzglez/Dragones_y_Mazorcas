@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BGG Explorer — Mis favoritos</title>
+
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+
+    /* ── Barra superior ── */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .top-bar h1 { font-size: 1.4rem; margin: 0; }
+
+    .btn-back {
+      padding: 8px 16px;
+      background: #1B9CFC;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-decoration: none;
+    }
+    .btn-back:hover { background: #0e7de0; }
+
+    /* ── Tabla ── */
+    .favorites-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+    }
+
+    .favorites-table th {
+      background: #f0f0f0;
+      padding: 11px 14px;
+      text-align: left;
+      color: #333;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .favorites-table th:hover { background: #e4e4e4; }
+
+    /* Indicador de orden */
+    .favorites-table th .sort-icon {
+      margin-left: 4px;
+      color: #aaa;
+      font-size: 0.75rem;
+    }
+
+    .favorites-table th.sorted-asc  .sort-icon,
+    .favorites-table th.sorted-desc .sort-icon { color: #1B9CFC; }
+
+    .favorites-table td {
+      padding: 10px 14px;
+      border-top: 1px solid #eee;
+      color: #444;
+      vertical-align: middle;
+    }
+
+    .favorites-table tr:hover td { background: #fafafa; }
+
+    /* Barra de complejidad */
+    .complexity-bar {
+      display: flex;
+      gap: 3px;
+      align-items: center;
+    }
+
+    .complexity-bar .bar-track {
+      width: 80px;
+      height: 8px;
+      background: #eee;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .complexity-bar .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #2ecc71, #f39c12, #e74c3c);
+    }
+
+    .complexity-bar .bar-label {
+      font-size: 0.78rem;
+      color: #666;
+      white-space: nowrap;
+    }
+
+    /* Tags categorías */
+    .tag {
+      display: inline-block;
+      background: #eef4ff;
+      color: #1B9CFC;
+      border-radius: 10px;
+      padding: 2px 8px;
+      margin: 2px 1px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+
+    /* Puntuación */
+    .rating-star {
+      color: #f39c12;
+      font-weight: bold;
+    }
+
+    /* Eliminar */
+    .btn-remove {
+      background: none;
+      border: none;
+      color: #e74c3c;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0 4px;
+    }
+    .btn-remove:hover { color: #c0392b; }
+
+    /* Mensaje vacío */
+    .empty-msg {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    }
+    .empty-msg a { color: #1B9CFC; }
+
+    .total-msg {
+      margin-bottom: 12px;
+      color: #666;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="top-bar">
+    <h1>⭐ Mis favoritos</h1>
+    <a class="btn-back" href="test-api.html">← Volver a la búsqueda</a>
+  </div>
+
+  <p class="total-msg" id="total-msg"></p>
+  <div id="favorites-container"></div>
+
+  <script type="module">
+    import BoardGame from "./js/classes/BoardGame.js";
+    import Favorites from "./js/classes/Favorites.js";
+
+    const favorites  = new Favorites();
+    const container  = document.getElementById("favorites-container");
+    const totalMsg   = document.getElementById("total-msg");
+
+    // Estado de ordenación
+    let sortColumn = null;
+    let sortAsc    = true;
+
+    render();
+
+    function render() {
+      const all = favorites.getAll();
+      totalMsg.textContent = all.length
+        ? `${all.length} juego${all.length > 1 ? "s" : ""} guardado${all.length > 1 ? "s" : ""}`
+        : "";
+
+      if (!all.length) {
+        container.innerHTML = `
+          <div class="empty-msg">
+            <p>No tienes juegos favoritos aún.</p>
+            <p style="margin-top:8px"><a href="test-api.html">← Ir a buscar juegos</a></p>
+          </div>
+        `;
+        return;
+      }
+
+      // Ordenación
+      const sorted = [...all].sort((a, b) => {
+        if (!sortColumn) return 0;
+        const valA = getSortValue(a, sortColumn);
+        const valB = getSortValue(b, sortColumn);
+        if (valA === null) return 1;
+        if (valB === null) return -1;
+        return sortAsc ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
+      });
+
+      const columns = ["nombre", "año", "jugadores", "duración", "puntuación", "complejidad", "categorías", ""];
+
+      container.innerHTML = `
+        <table class="favorites-table">
+          <thead>
+            <tr>
+              ${columns.map(col => {
+                if (!col) return `<th></th>`;
+                const isSorted = sortColumn === col;
+                const icon = isSorted ? (sortAsc ? "▲" : "▼") : "⇅";
+                const cls  = isSorted ? (sortAsc ? "sorted-asc" : "sorted-desc") : "";
+                const sortable = col !== "categorías";
+                return `<th class="${cls}" data-col="${col}" ${sortable ? "" : 'style="cursor:default"'}>
+                  ${col.charAt(0).toUpperCase() + col.slice(1)}
+                  ${sortable ? `<span class="sort-icon">${icon}</span>` : ""}
+                </th>`;
+              }).join("")}
+            </tr>
+          </thead>
+          <tbody>
+            ${sorted.map(g => `
+              <tr>
+                <td><strong>${g.name}</strong></td>
+                <td>${g.year ?? "—"}</td>
+                <td>${g.getPlayers()}</td>
+                <td>${g.getPlaytime()}</td>
+                <td><span class="rating-star">★</span> ${g.getRating()}</td>
+                <td>${renderComplexity(g.rating?.weight)}</td>
+                <td>${(g.categories ?? []).slice(0, 3).map(c => `<span class="tag">${c}</span>`).join("") || "—"}</td>
+                <td>
+                  <button class="btn-remove" data-id="${g.id}" title="Quitar de favoritos">🗑️</button>
+                </td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+
+      // Eventos de ordenación
+      container.querySelectorAll("th[data-col]").forEach(th => {
+        const col = th.dataset.col;
+        if (col === "categorías") return;
+        th.addEventListener("click", () => {
+          if (sortColumn === col) {
+            sortAsc = !sortAsc;
+          } else {
+            sortColumn = col;
+            sortAsc    = true;
+          }
+          render();
+        });
+      });
+
+      // Eventos de eliminar
+      container.querySelectorAll(".btn-remove").forEach(btn => {
+        btn.addEventListener("click", () => {
+          favorites.remove(btn.dataset.id);
+          render();
+        });
+      });
+    }
+
+    // Valor para ordenar según columna
+    function getSortValue(game, col) {
+      switch (col) {
+        case "nombre":      return game.name?.toLowerCase() ?? null;
+        case "año":         return Number(game.year) || null;
+        case "jugadores":   return Number(game.players?.min) || null;
+        case "duración":    return Number(game.playtime?.min) || null;
+        case "puntuación":  return Number(game.rating?.average) || null;
+        case "complejidad": return Number(game.rating?.weight) || null;
+        default:            return null;
+      }
+    }
+
+    // Barra visual de complejidad
+    function renderComplexity(weight) {
+      if (!weight) return "—";
+      const val     = parseFloat(weight);
+      const pct     = (val / 5) * 100;
+      const label   = `${val.toFixed(1)} / 5`;
+      return `
+        <div class="complexity-bar">
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${pct}%"></div>
+          </div>
+          <span class="bar-label">${label}</span>
+        </div>
+      `;
+    }
+
+  </script>
+
+</body>
+</html>
