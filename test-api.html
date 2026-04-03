@@ -6,28 +6,97 @@
   <title>Test BGG API</title>
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
 
-    input {
-      padding: 8px;
-      width: 250px;
-    }
+    input  { padding: 8px; width: 250px; }
+    button { padding: 8px 12px; margin-left: 8px; cursor: pointer; }
 
-    button {
-      padding: 8px 12px;
-      margin-left: 8px;
-      cursor: pointer;
-    }
-
-    .game {
+    /* ── Tarjeta ── */
+    .game-card {
+      background: white;
       border: 1px solid #ddd;
-      padding: 10px;
-      margin-top: 10px;
       border-radius: 8px;
+      margin-top: 10px;
+      overflow: hidden;
     }
+
+    /* Cabecera clicable */
+    .game-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .game-card-header:hover { background: #fafafa; }
+
+    /* Thumbnail */
+    .game-card-header img.thumb {
+      width: 70px;
+      height: 55px;
+      object-fit: cover;
+      border-radius: 6px;
+      background: #eee;
+      flex-shrink: 0;
+    }
+
+    /* Texto central */
+    .game-card-header .card-info {
+      flex: 1;
+    }
+    .game-card-header h3 { margin: 0 0 4px; font-size: 1rem; }
+    .game-card-header p  { margin: 0; font-size: 0.85rem; color: #666; }
+
+    /* Icono chevron */
+    .chevron {
+      font-size: 1.2rem;
+      color: #999;
+      transition: transform 0.3s ease;
+      flex-shrink: 0;
+    }
+    .chevron.open {
+      transform: rotate(180deg);
+    }
+
+    /* ── Panel de detalle ── */
+    .game-detail {
+      display: none;
+      border-top: 1px solid #eee;
+      padding: 16px;
+      background: #fefefe;
+    }
+    .game-detail.open { display: block; }
+
+    .game-detail img.cover {
+      max-width: 180px;
+      border-radius: 8px;
+      float: right;
+      margin-left: 16px;
+      margin-bottom: 8px;
+    }
+
+    .game-detail p      { margin: 5px 0; font-size: 0.88rem; }
+    .game-detail .label { font-weight: bold; }
+    .game-detail .clearfix::after { content: ""; display: block; clear: both; }
+
+    .section-title {
+      margin: 12px 0 5px;
+      font-weight: bold;
+      font-size: 0.88rem;
+      color: #333;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #eee;
+      border-radius: 12px;
+      padding: 2px 10px;
+      margin: 2px;
+      font-size: 0.78rem;
+    }
+
+    .loading { color: #999; font-style: italic; padding: 4px 0; }
   </style>
 </head>
 
@@ -38,51 +107,139 @@
   <input type="text" id="searchInput" placeholder="Buscar juego..." />
   <button id="searchBtn">Buscar</button>
 
+  <div id="status" style="margin-top:10px; color:#666;"></div>
   <div id="results"></div>
 
   <script type="module">
     import ApiService from "./js/api/apiService.js";
 
-    const api = new ApiService();
-
-    const input = document.getElementById("searchInput");
-    const button = document.getElementById("searchBtn");
+    const api        = new ApiService();
+    const input      = document.getElementById("searchInput");
+    const button     = document.getElementById("searchBtn");
     const resultsDiv = document.getElementById("results");
+    const statusDiv  = document.getElementById("status");
 
+    // ── Búsqueda ──────────────────────────────────────
     button.addEventListener("click", async () => {
       const query = input.value.trim();
       if (!query) return;
 
-      resultsDiv.innerHTML = "Cargando...";
+      resultsDiv.innerHTML = "";
+      statusDiv.textContent = "Buscando...";
 
       try {
         const games = await api.searchGamesSimplified(query);
 
         if (!games.length) {
-          resultsDiv.innerHTML = "No se encontraron resultados";
+          statusDiv.textContent = "No se encontraron resultados.";
           return;
         }
 
-        resultsDiv.innerHTML = "";
+        statusDiv.textContent = `${games.length} resultados. Haz clic en un juego para ver el detalle.`;
 
         games.forEach(game => {
-          const div = document.createElement("div");
-          div.classList.add("game");
+          const card = document.createElement("div");
+          card.classList.add("game-card");
 
-          div.innerHTML = `
-            <h3>${game.name}</h3>
-            <p><strong>Año:</strong> ${game.year}</p>
-            <p><strong>ID:</strong> ${game.id}</p>
+          card.innerHTML = `
+            <div class="game-card-header">
+              <img
+                class="thumb"
+                src="${game.thumbnail || ""}"
+                alt="${game.name}"
+                onerror="this.style.visibility='hidden'"
+              />
+              <div class="card-info">
+                <h3>${game.name ?? "Sin nombre"}</h3>
+                <p>Año: ${game.year ?? "—"} &nbsp;|&nbsp; ID: ${game.id}</p>
+              </div>
+              <span class="chevron">&#8964;</span>
+            </div>
+            <div class="game-detail"></div>
           `;
 
-          resultsDiv.appendChild(div);
+          const header      = card.querySelector(".game-card-header");
+          const detailPanel = card.querySelector(".game-detail");
+          const chevron     = card.querySelector(".chevron");
+
+          header.addEventListener("click", () => {
+            const isOpen = detailPanel.classList.toggle("open");
+            chevron.classList.toggle("open", isOpen);
+
+            if (isOpen && detailPanel.innerHTML === "") {
+              loadDetail(game.id, detailPanel);
+            }
+          });
+
+          resultsDiv.appendChild(card);
         });
 
       } catch (error) {
-        resultsDiv.innerHTML = "Error al cargar datos";
+        statusDiv.textContent = "Error al buscar. ¿Está arrancado el servidor?";
         console.error(error);
       }
     });
+
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") button.click();
+    });
+
+    // ── Detalle dentro de la tarjeta ─────────────────
+    async function loadDetail(id, panel) {
+      panel.innerHTML = `<p class="loading">Cargando detalle...</p>`;
+
+      try {
+        const g = await api.getGameSimplified(id);
+
+        const players  = g.minPlayers && g.maxPlayers ? `${g.minPlayers}–${g.maxPlayers}` : g.minPlayers ?? "—";
+        const playtime = g.minPlaytime && g.maxPlaytime ? `${g.minPlaytime}–${g.maxPlaytime} min` : g.minPlaytime ? `${g.minPlaytime} min` : "—";
+        const rating   = g.rating?.average ? parseFloat(g.rating.average).toFixed(1) : "—";
+        const votes    = g.rating?.votes   ? Number(g.rating.votes).toLocaleString()  : "—";
+        const weight   = g.rating?.weight  ? parseFloat(g.rating.weight).toFixed(2)   : "—";
+        const rank     = g.rank   ? `#${g.rank}` : "—";
+        const age      = g.minAge ? `+${g.minAge} años` : "—";
+        const language = g.language?.join(", ") ?? "No especificado";
+
+        const desc = (g.description ?? "Sin descripción.")
+          .replace(/&amp;/g, "&")
+          .replace(/&mdash;/g, "—")
+          .replace(/&#10;/g, " ")
+          .trim()
+          .substring(0, 500) + "...";
+
+        panel.innerHTML = `
+          <div class="clearfix">
+            ${g.image ? `<img class="cover" src="${g.image}" alt="${g.name}"/>` : ""}
+
+            <p><span class="label">ID:</span> ${g.id}</p>
+            <p><span class="label">Año:</span> ${g.year ?? "—"}</p>
+            <p><span class="label">Jugadores:</span> ${players}</p>
+            <p><span class="label">Duración:</span> ${playtime}</p>
+            <p><span class="label">Edad mínima:</span> ${age}</p>
+            <p><span class="label">Puntuación media:</span> ★ ${rating} &nbsp;(${votes} votos)</p>
+            <p><span class="label">Peso/Complejidad:</span> ${weight} / 5</p>
+            <p><span class="label">Ranking BGG:</span> ${rank}</p>
+            <p><span class="label">Idioma:</span> ${language}</p>
+
+            <p class="section-title">Descripción</p>
+            <p style="color:#555; line-height:1.6">${desc}</p>
+
+            <p class="section-title">Categorías</p>
+            <div>${(g.categories ?? []).map(c => `<span class="tag">${c}</span>`).join("") || "—"}</div>
+
+            <p class="section-title">Mecánicas</p>
+            <div>${(g.mechanics ?? []).map(m => `<span class="tag">${m}</span>`).join("") || "—"}</div>
+
+            <p class="section-title">Editoriales</p>
+            <div>${(g.publishers ?? []).slice(0, 10).map(p => `<span class="tag">${p}</span>`).join("") || "—"}</div>
+          </div>
+        `;
+
+      } catch (error) {
+        panel.innerHTML = `<p class="loading">Error al cargar el detalle.</p>`;
+        console.error(error);
+      }
+    }
   </script>
 
 </body>
