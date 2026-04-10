@@ -1,87 +1,132 @@
-export default class BoardGame {
-  /**
-   * @param {Object} data - Objeto devuelto por ApiService.getGameSimplified()
-   */
-  constructor(data) {
-    this.id = data.id;
-    this.name = data.name;
-    this.description = data.description;
-    this.minPlayers = data.minPlayers;
-    this.maxPlayers = data.maxPlayers;
-    this.rating = data.rating ? parseFloat(data.rating).toFixed(1) : null;
+import Game from "./Game.js";
+
+export default class BoardGame extends Game {
+  constructor({
+    id,
+    name,
+    year,
+    minPlayers,
+    maxPlayers,
+    minPlaytime,
+    maxPlaytime,
+    image,
+    thumbnail,
+    description,
+    minAge,
+    categories,
+    mechanics,
+    publishers,
+    language,
+    rating,
+    rank,
+  }) {
+    // Llamamos al constructor de Game con las propiedades base
+    super(
+      id,
+      name,
+      { min: minPlayers, max: maxPlayers },
+      { min: minPlaytime, max: maxPlaytime },
+      image
+    );
+
+    // Propiedades específicas de BoardGame
+    this.year        = year;
+    this.thumbnail   = thumbnail;
+    this.description = description;
+    this.minAge      = minAge;
+    this.categories  = categories  ?? [];
+    this.mechanics   = mechanics   ?? [];
+    this.publishers  = publishers  ?? [];
+    this.language    = language    ?? [];
+    this.rating      = rating      ?? { average: null, votes: null, weight: null };
+    this.rank        = rank        ?? null;
   }
 
-  /**
-   * Devuelve el rango de jugadores formateado
-   */
-  _playersLabel() {
-    if (this.minPlayers && this.maxPlayers) {
-      return this.minPlayers === this.maxPlayers
-        ? `${this.minPlayers} jugadores`
-        : `${this.minPlayers} – ${this.maxPlayers} jugadores`;
-    }
-    return "N/A";
+  // ── Métodos ────────────────────────────────────────
+
+  // Devuelve la puntuación media formateada
+  getRating() {
+    return this.rating.average
+      ? parseFloat(this.rating.average).toFixed(1)
+      : "Sin puntuación";
   }
 
-  /**
-   * Devuelve la puntuación con estrellas visuales
-   */
-  _ratingLabel() {
-    if (!this.rating) return "Sin puntuación";
-    const stars = Math.round(this.rating / 2); // sobre 5 estrellas
-    return `${"★".repeat(stars)}${"☆".repeat(5 - stars)} ${this.rating} / 10`;
+  // Devuelve el número de votos formateado
+  getVotes() {
+    return this.rating.votes
+      ? Number(this.rating.votes).toLocaleString()
+      : "0";
   }
 
-  /**
-   * Trunca la descripción a un número máximo de caracteres
-   */
-  _truncateDescription(maxChars = 300) {
-    if (!this.description) return "Sin descripción disponible.";
-    return this.description.length > maxChars
-      ? this.description.slice(0, maxChars).trim() + "…"
-      : this.description;
+  // Devuelve la complejidad formateada
+  getWeight() {
+    return this.rating.weight
+      ? `${parseFloat(this.rating.weight).toFixed(2)} / 5`
+      : "—";
   }
 
-  /**
-   * Genera y devuelve el elemento HTML del juego
-   * @returns {HTMLElement}
-   */
-  render() {
-    const article = document.createElement("article");
-    article.classList.add("boardgame-card");
-    article.dataset.id = this.id;
-
-    article.innerHTML = `
-      <div class="boardgame-card__header">
-        <h2 class="boardgame-card__title">${this.name}</h2>
-        <span class="boardgame-card__id">ID: ${this.id}</span>
-      </div>
-
-      <div class="boardgame-card__meta">
-        <span class="boardgame-card__players">🎲 ${this._playersLabel()}</span>
-        <span class="boardgame-card__rating">⭐ ${this._ratingLabel()}</span>
-      </div>
-
-      <p class="boardgame-card__description">${this._truncateDescription()}</p>
-
-      
-        class="boardgame-card__link"
-        href="https://boardgamegeek.com/boardgame/${this.id}"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Ver en BGG →
-      </a>
-    `;
-
-    return article;
+  // Devuelve el rango de jugadores formateado
+  getPlayers() {
+    return this.players.max
+      ? `${this.players.min}–${this.players.max}`
+      : this.players.min ?? "—";
   }
 
-  /**
-   * Inyecta el HTML del juego en un contenedor del DOM
-   * @param {HTMLElement} container
-   */
-  appendTo(container) {
-    container.appendChild(this.render());
+  // Devuelve la duración formateada
+  getPlaytime() {
+    return this.playtime.max
+      ? `${this.playtime.min}–${this.playtime.max} min`
+      : this.playtime.min ? `${this.playtime.min} min` : "—";
+  }
+
+  // Devuelve la edad mínima formateada
+  getMinAge() {
+    return this.minAge ? `+${this.minAge} años` : "—";
+  }
+
+  // Devuelve el ranking formateado
+  getRank() {
+    return this.rank ? `#${this.rank}` : "—";
+  }
+
+  // Devuelve la descripción limpia y recortada
+  getDescription(maxLength = 500) {
+    const clean = (this.description ?? "Sin descripción.")
+      .replace(/&amp;/g, "&")
+      .replace(/&mdash;/g, "—")
+      .replace(/&#10;/g, " ")
+      .trim();
+
+    return clean.length > maxLength
+      ? clean.substring(0, maxLength) + "..."
+      : clean;
+  }
+
+  // Convierte el objeto a un formato plano para guardarlo en localStorage
+  toJSON() {
+    return {
+      id:          this.id,
+      name:        this.name,
+      year:        this.year,
+      minPlayers:  this.players.min,
+      maxPlayers:  this.players.max,
+      minPlaytime: this.playtime.min,
+      maxPlaytime: this.playtime.max,
+      image:       this.image,
+      thumbnail:   this.thumbnail,
+      description: this.description,
+      minAge:      this.minAge,
+      categories:  this.categories,
+      mechanics:   this.mechanics,
+      publishers:  this.publishers,
+      language:    this.language,
+      rating:      this.rating,
+      rank:        this.rank,
+    };
+  }
+
+  // Reconstruye un BoardGame desde un objeto plano (localStorage)
+  static fromJSON(data) {
+    return new BoardGame(data);
   }
 }
