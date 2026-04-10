@@ -9,3 +9,5 @@ class ApiService {
     return data;
   }
 }
+
+export default ApiService;
