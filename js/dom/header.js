@@ -3,7 +3,7 @@ export function createHeader() {
   header.classList.add("header");
   header.innerHTML = `
     <div class="header__container">
-      <h1 class="logo">🎲 BoardGames Finder</h1>
+      <h1 class="logo">Dragones y Mazorcas</h1>
       <nav class="nav" id="nav">
         <a href="#">Inicio</a>
         <a href="#">Explorar</a>

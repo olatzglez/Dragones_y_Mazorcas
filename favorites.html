@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mis Favoritos — BoardGames Finder</title>
+  <link rel="stylesheet" href="./src/css/styles.css" />
+</head>
+
+<body>
+  <div id="header-root"></div>
+
+  <main class="favorites-main">
+
+    <!-- ── Sección: Mis favoritos ────────────────────────────── -->
+    <div class="section-header" id="favs-header">
+      <h2>⭐ Mis favoritos</h2>
+      <span class="section-chevron open" id="favs-chevron">&#8964;</span>
+    </div>
+    <div class="section-body open" id="favs-body">
+      <p id="status" class="status-msg"></p>
+      <div id="favorites-list"></div>
+    </div>
+
+    <!-- ── Sección: Tabla comparativa ─────────────────────────── -->
+    <div class="compare-section">
+      <div class="section-header" id="compare-header">
+        <h2>📊 Tabla comparativa</h2>
+        <span class="section-chevron open" id="compare-chevron">&#8964;</span>
+      </div>
+      <div class="section-body open" id="compare-body">
+        <div class="compare-toolbar">
+          <p class="compare-subtitle">
+            Haz clic en una columna para ordenar. Vuelve a hacer clic para invertir el orden.
+          </p>
+          <div class="compare-actions">
+            <button class="btn-export" id="btn-export-pdf">Exportar a PDF</button>
+            <button class="btn-export" id="btn-export-csv">Exportar a CSV</button>
+          </div>
+        </div>
+        <div id="compare-container"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <div id="footer-root"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script type="module">
+    import { createHeader, initHeaderEvents } from "./js/dom/header.js";
+    import { createFooter } from "./js/dom/footer.js";
+    import Favorites from "./js/classes/Favorites.js";
+
+    document.getElementById("header-root").appendChild(createHeader());
+    initHeaderEvents();
+    document.getElementById("footer-root").appendChild(createFooter());
+
+    const favorites = new Favorites();
+    const list      = document.getElementById("favorites-list");
+    const status    = document.getElementById("status");
+
+    // ── Helpers para extraer valores numéricos de los getters ──
+    // Devuelve el primer número encontrado en un string, o Infinity si no hay.
+    function parseFirst(str) {
+      if (str == null) return Infinity;
+      const match = String(str).match(/[\d,.]+/);
+      return match ? parseFloat(match[0].replace(",", ".")) : Infinity;
+    }
+
+    // ── Estado de la tabla comparativa ────────────────────────
+    let sortCol = null;   // columna activa
+    let sortDir = 1;      // 1 = asc, -1 = desc
+
+    const COLUMNS = [
+      { key: "name",     label: "Juego",        sortable: false },
+      { key: "year",     label: "Año",           sortable: true  },
+      { key: "players",  label: "Jugadores",     sortable: true  },
+      { key: "playtime", label: "Duración",      sortable: true  },
+      { key: "minage",   label: "Edad mín.",     sortable: true  },
+      { key: "rating",   label: "Puntuación",    sortable: true  },
+      { key: "weight",   label: "Dificultad",    sortable: true  },
+    ];
+
+    // Extrae los datos relevantes de una instancia BoardGame
+    function gameToRow(game) {
+      return {
+        id:       game.id,
+        name:     game.name ?? "Sin nombre",
+        year:     game.year ?? null,
+        players:  game.getPlayers(),
+        playtime: game.getPlaytime(),
+        minage:   game.getMinAge(),
+        rating:   game.getRating(),
+        weight:   game.getWeight(),
+        // Valores numéricos para ordenación
+        _year:     parseFirst(game.year),
+        _players:  parseFirst(game.getPlayers()),
+        _playtime: parseFirst(game.getPlaytime()),
+        _minage:   parseFirst(game.getMinAge()),
+        _rating:   parseFirst(game.getRating()),
+        _weight:   parseFirst(game.getWeight()),
+      };
+    }
+
+    // Renderiza puntos de dificultad (escala 1-5)
+    function complexityDots(value) {
+      const raw = parseFloat(value);
+      if (isNaN(raw)) return value ?? "—";
+      const filled = Math.round(raw);
+      let dots = '<span class="complexity-bar">';
+      for (let i = 1; i <= 5; i++) {
+        dots += `<span class="complexity-dot${i <= filled ? " filled" : ""}"></span>`;
+      }
+      dots += `</span> <span class="complexity-value">${raw.toFixed(2)}</span>`;
+      return dots;
+    }
+
+    // Renderiza la tabla comparativa completa
+    function renderCompareTable() {
+      const container = document.getElementById("compare-container");
+      const games = favorites.getAll();
+
+      if (!games.length) {
+        container.innerHTML = '<p class="compare-empty">Añade juegos a favoritos para compararlos aquí.</p>';
+        return;
+      }
+
+      // Construir filas de datos
+      let rows = games.map(gameToRow);
+
+      // Ordenar si hay columna activa
+      if (sortCol) {
+        rows.sort((a, b) => {
+          const av = a["_" + sortCol];
+          const bv = b["_" + sortCol];
+          if (av === bv) return 0;
+          if (av === Infinity) return 1;
+          if (bv === Infinity) return -1;
+          return (av - bv) * sortDir;
+        });
+      }
+
+      // Cabecera
+      let html = `
+        <div class="compare-table-wrap">
+          <table class="compare-table">
+            <thead>
+              <tr>
+      `;
+
+      COLUMNS.forEach(col => {
+        let cls = col.sortable ? "sortable" : "";
+        let icon = "";
+        if (col.sortable) {
+          if (sortCol === col.key) {
+            cls += sortDir === 1 ? " asc" : " desc";
+            icon = `<i class="sort-icon">${sortDir === 1 ? "▲" : "▼"}</i>`;
+          } else {
+            icon = `<i class="sort-icon">⇅</i>`;
+          }
+        }
+        html += `<th class="${cls}" data-col="${col.key}">${col.label}${icon}</th>`;
+      });
+
+      html += `
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      // Filas
+      rows.forEach(row => {
+        const ratingNum = parseFloat(row.rating);
+        const ratingDisplay = isNaN(ratingNum)
+          ? (row.rating ?? "—")
+          : `<span class="rating-star">★</span>${ratingNum.toFixed(2)}`;
+
+        html += `
+          <tr>
+            <td class="col-name" title="${row.name}">${row.name}</td>
+            <td class="col-num">${row.year ?? "—"}</td>
+            <td>${row.players ?? "—"}</td>
+            <td>${row.playtime ?? "—"}</td>
+            <td class="col-num">${row.minage ?? "—"}</td>
+            <td>${ratingDisplay}</td>
+            <td>${complexityDots(row.weight)}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      container.innerHTML = html;
+
+      // Eventos de ordenación
+      container.querySelectorAll("th.sortable").forEach(th => {
+        th.addEventListener("click", () => {
+          const col = th.dataset.col;
+          if (sortCol === col) {
+            sortDir *= -1;
+          } else {
+            sortCol = col;
+            sortDir = 1;
+          }
+          renderCompareTable();
+        });
+      });
+    }
+
+    // ── Render de las cards de favoritos (sección existente) ───
+    const games = favorites.getAll();
+
+    if (!games.length) {
+      status.textContent = "No tienes favoritos guardados aún.";
+    } else {
+      status.textContent = `${games.length} juego(s) guardado(s).`;
+
+      games.forEach(game => {
+        const card = document.createElement("div");
+        card.classList.add("game-card");
+        card.innerHTML = `
+          <div class="game-card-header">
+            <div class="card-info">
+              <h3>${game.name ?? "Sin nombre"}</h3>
+              <p>Año: ${game.year ?? "—"} &nbsp;|&nbsp; ID: ${game.id}</p>
+            </div>
+            <button class="btn-favorite-header saved" data-id="${game.id}">❌ Quitar</button>
+            <span class="chevron">&#8964;</span>
+          </div>
+          <div class="game-detail">
+            <div class="clearfix">
+              ${game.image ? `<img class="game-detail__cover" src="${game.image}" alt="${game.name}"/>` : ""}
+              <p><span class="label">ID:</span> ${game.id}</p>
+              <p><span class="label">Año:</span> ${game.year ?? "—"}</p>
+              <p><span class="label">Jugadores:</span> ${game.getPlayers()}</p>
+              <p><span class="label">Duración:</span> ${game.getPlaytime()}</p>
+              <p><span class="label">Edad mínima:</span> ${game.getMinAge()}</p>
+              <p><span class="label">Puntuación media:</span> ★ ${game.getRating()} (${game.getVotes()} votos)</p>
+              <p><span class="label">Dificultad de juego:</span> ${game.getWeight()}</p>
+              <p><span class="label">Ranking BGG:</span> ${game.getRank()}</p>
+              <p><span class="label">Idioma:</span> ${game.language?.join(", ") || "No especificado"}</p>
+              <p class="section-title">Descripción</p>
+              <p class="game-detail__description">${game.getDescription()}</p>
+              <p class="section-title">Categorías</p>
+              <div>${game.categories.map(c => `<span class="tag">${c}</span>`).join("") || "—"}</div>
+              <p class="section-title">Mecánicas</p>
+              <div>${game.mechanics.map(m => `<span class="tag">${m}</span>`).join("") || "—"}</div>
+              <p class="section-title">Editoriales</p>
+              <div>${game.publishers.slice(0, 10).map(p => `<span class="tag">${p}</span>`).join("") || "—"}</div>
+            </div>
+          </div>
+        `;
+
+        const header  = card.querySelector(".game-card-header");
+        const detail  = card.querySelector(".game-detail");
+        const chevron = card.querySelector(".chevron");
+        const btnFav  = card.querySelector(".btn-favorite-header");
+
+        header.addEventListener("click", () => {
+          const isOpen = detail.classList.toggle("open");
+          chevron.classList.toggle("open", isOpen);
+        });
+
+        btnFav.addEventListener("click", (e) => {
+          e.stopPropagation();
+          favorites.remove(game.id);
+          card.remove();
+          const remaining = favorites.count();
+          status.textContent = remaining
+            ? `${remaining} juego(s) guardado(s).`
+            : "No tienes favoritos guardados aún.";
+          // ── Sincronizar tabla comparativa ──
+          renderCompareTable();
+        });
+
+        list.appendChild(card);
+      });
+    }
+
+    // ── Secciones plegables ────────────────────────────────────
+    function makeToggle(headerId, bodyId, chevronId) {
+      const header  = document.getElementById(headerId);
+      const body    = document.getElementById(bodyId);
+      const chevron = document.getElementById(chevronId);
+      header.addEventListener("click", () => {
+        const isOpen = body.classList.toggle("open");
+        chevron.classList.toggle("open", isOpen);
+      });
+    }
+
+    makeToggle("favs-header",    "favs-body",    "favs-chevron");
+    makeToggle("compare-header", "compare-body", "compare-chevron");
+
+    // ── Exportar datos de la tabla ─────────────────────────────
+
+    // Devuelve las filas actuales como array plano de strings (sin HTML)
+    function getExportRows() {
+      return favorites.getAll().map(game => ({
+        name:     game.name ?? "Sin nombre",
+        year:     game.year ?? "—",
+        players:  game.getPlayers() ?? "—",
+        playtime: game.getPlaytime() ?? "—",
+        minage:   game.getMinAge() ?? "—",
+        rating:   game.getRating() ?? "—",
+        weight:   game.getWeight() ?? "—",
+      }));
+    }
+
+    const EXPORT_HEADERS = ["Juego", "Año", "Jugadores", "Duración", "Edad mín.", "Puntuación", "Dificultad"];
+    const EXPORT_KEYS    = ["name", "year", "players", "playtime", "minage", "rating", "weight"];
+
+    // CSV
+    function exportCSV() {
+      const rows  = getExportRows();
+      const lines = [EXPORT_HEADERS.join(";")];
+      rows.forEach(row => {
+        const values = EXPORT_KEYS.map(k => `"${String(row[k]).replace(/"/g, '""')}"`);
+        lines.push(values.join(";"));
+      });
+      const blob = new Blob(["\uFEFF" + lines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href     = url;
+      a.download = "favoritos_boardgames.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // PDF
+    function exportPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc  = new jsPDF({ orientation: "landscape" });
+      const rows = getExportRows().map(row => EXPORT_KEYS.map(k => row[k]));
+      doc.setFontSize(14);
+      doc.text("Mis favoritos — BoardGames Finder", 14, 16);
+      doc.autoTable({
+        head:       [EXPORT_HEADERS],
+        body:       rows,
+        startY:     22,
+        styles:     { fontSize: 9, cellPadding: 4 },
+        headStyles: { fillColor: [27, 156, 252], textColor: 255, fontStyle: "bold" },
+        alternateRowStyles: { fillColor: [242, 242, 242] },
+      });
+      doc.save("favoritos_boardgames.pdf");
+    }
+
+    document.getElementById("btn-export-csv").addEventListener("click", exportCSV);
+    document.getElementById("btn-export-pdf").addEventListener("click", exportPDF);
+
+    // Renderizado inicial de la tabla
+    renderCompareTable();
+
+  </script>
+</body>
+</html>

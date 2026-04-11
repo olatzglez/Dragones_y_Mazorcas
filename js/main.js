@@ -8,3 +8,7 @@ document.body.prepend(header);
 
 // Activar eventos
 initHeaderEvents();
+
+// Crear footer
+import { createFooter } from "./dom/footer.js";
+document.body.appendChild(createFooter());
