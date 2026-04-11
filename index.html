@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dragones y Mazorcas — Encuentra tu próximo juego de mesa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./src/css/styles.css" />
+  <link rel="stylesheet" href="./src/css/landing.css" />
+</head>
+
+<body>
+
+  <div id="header-root"></div>
+
+  <!-- ── HERO ─────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero__content">
+      <p class="hero__eyebrow">TU BUSCADOR DE JUEGOS DE MESA</p>
+      <h1 class="hero__title">Encuentra tu próximo<br>juego favorito</h1>
+      <p class="hero__subtitle">
+        Busca por nombre, ID o categoría. Guarda tus favoritos y compara juegos antes de decidirte.
+      </p>
+      <div class="hero__actions">
+        <a href="./search.html" class="btn btn-primary">Empezar a explorar</a>
+        <a href="./favorites.html" class="btn btn-tertiary">Ver mis favoritos</a>
+      </div>
+    </div>
+    <div class="hero__deco" aria-hidden="true">
+      <div class="deco-circle deco-circle--lg"></div>
+      <div class="deco-circle deco-circle--sm"></div>
+      <div class="deco-dice">🎲</div>
+    </div>
+  </section>
+
+  <!-- ── CÓMO FUNCIONA ─────────────────────────────────────── -->
+  <section class="section-how">
+    <div class="container">
+      <h2 class="section-title-main">¿Cómo funciona?</h2>
+      <p class="section-desc">Tres pasos para encontrar tu juego perfecto.</p>
+      <div class="steps">
+        <div class="step-card">
+          <div class="step-card__icon">🔍</div>
+          <span class="step-card__num">01</span>
+          <h3 class="step-card__title">Busca</h3>
+          <p class="step-card__text">Por nombre, ID de BGG o categoría. Filtra por jugadores, duración o edad mínima.</p>
+        </div>
+        <div class="step-connector" aria-hidden="true"></div>
+        <div class="step-card">
+          <div class="step-card__icon">⭐</div>
+          <span class="step-card__num">02</span>
+          <h3 class="step-card__title">Guarda</h3>
+          <p class="step-card__text">Añade los que te interesen a favoritos para no perderlos de vista.</p>
+        </div>
+        <div class="step-connector" aria-hidden="true"></div>
+        <div class="step-card">
+          <div class="step-card__icon">📊</div>
+          <span class="step-card__num">03</span>
+          <h3 class="step-card__title">Compara</h3>
+          <p class="step-card__text">Usa la tabla comparativa para decidirte analizando puntuación, dificultad y más.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CATEGORÍAS ─────────────────────────────────────────── -->
+  <section class="section-categories">
+    <div class="container">
+      <h2 class="section-title-main">Explora por categoría</h2>
+      <div class="categories-grid">
+        <a href="./search.html?cat=strategy" class="cat-pill-card">
+          <span class="cat-pill-card__icon">⚔️</span>
+          <span class="cat-pill-card__label">Estrategia</span>
+        </a>
+        <a href="./search.html?cat=family" class="cat-pill-card">
+          <span class="cat-pill-card__icon">🏠</span>
+          <span class="cat-pill-card__label">Familiar</span>
+        </a>
+        <a href="./search.html?cat=coop" class="cat-pill-card">
+          <span class="cat-pill-card__icon">🤝</span>
+          <span class="cat-pill-card__label">Cooperativo</span>
+        </a>
+        <a href="./search.html?cat=party" class="cat-pill-card">
+          <span class="cat-pill-card__icon">🎉</span>
+          <span class="cat-pill-card__label">Party</span>
+        </a>
+        <a href="./search.html?cat=abstract" class="cat-pill-card">
+          <span class="cat-pill-card__icon">♟️</span>
+          <span class="cat-pill-card__label">Abstracto</span>
+        </a>
+        <a href="./search.html?cat=rpg" class="cat-pill-card">
+          <span class="cat-pill-card__icon">🐉</span>
+          <span class="cat-pill-card__label">Rol / Aventura</span>
+        </a>
+        <a href="./search.html?cat=deckbuilding" class="cat-pill-card">
+          <span class="cat-pill-card__icon">🃏</span>
+          <span class="cat-pill-card__label">Deckbuilding</span>
+        </a>
+        <a href="./search.html?cat=wargame" class="cat-pill-card">
+          <span class="cat-pill-card__icon">🗺️</span>
+          <span class="cat-pill-card__label">Wargame</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FUNCIONALIDADES ───────────────────────────────────── -->
+  <section class="section-features">
+    <div class="container">
+      <h2 class="section-title-main">Todo lo que necesitas para elegir bien</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-card__icon feature-card__icon--blue">🔎</div>
+          <h3 class="feature-card__title">Búsqueda avanzada</h3>
+          <p class="feature-card__text">Busca por nombre exacto o por ID de BoardGameGeek. Filtra por número de jugadores, duración, edad mínima y más.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card__icon feature-card__icon--orange">⭐</div>
+          <h3 class="feature-card__title">Lista de favoritos</h3>
+          <p class="feature-card__text">Guarda los juegos que te interesan y consúltalos cuando quieras, con todos sus datos detallados.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card__icon feature-card__icon--green">📊</div>
+          <h3 class="feature-card__title">Tabla comparativa</h3>
+          <p class="feature-card__text">Compara tus favoritos lado a lado. Ordena por año, jugadores, duración, puntuación o dificultad.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card__icon feature-card__icon--blue">📥</div>
+          <h3 class="feature-card__title">Exporta tus datos</h3>
+          <p class="feature-card__text">Descarga tu lista de favoritos en PDF o CSV para compartirla o consultarla sin conexión.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA FINAL ─────────────────────────────────────────── -->
+  <section class="section-cta">
+    <div class="container section-cta__inner">
+      <h2 class="section-cta__title">¿Listo para encontrar tu próxima partida?</h2>
+      <p class="section-cta__subtitle">Miles de juegos de mesa. Datos de BoardGameGeek. Sin registro.</p>
+      <a href="./search.html" class="btn btn-primary">Explorar juegos ahora</a>
+    </div>
+  </section>
+
+  <div id="footer-root"></div>
+
+  <script type="module">
+    import { createHeader, initHeaderEvents } from "./js/dom/header.js";
+    import { createFooter } from "./js/dom/footer.js";
+
+    document.getElementById("header-root").appendChild(createHeader());
+    initHeaderEvents();
+    document.getElementById("footer-root").appendChild(createFooter());
+  </script>
+
+</body>
+</html>

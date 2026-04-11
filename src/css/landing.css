@@ -1,0 +1,352 @@
+/* ── UTILIDADES ─────────────────────────────── */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.section-title-main {
+  font-family: var(--font-family-title);
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--black);
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.section-desc {
+  text-align: center;
+  color: var(--grey);
+  font-size: 0.95rem;
+  margin-bottom: 2.5rem;
+}
+
+/* ── HERO ───────────────────────────────────── */
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 5rem 1.5rem 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.hero__content {
+  flex: 1;
+  max-width: 540px;
+}
+
+.hero__eyebrow {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--primary-orange);
+  background: var(--bg-light);
+  border-radius: 20px;
+  padding: 4px 14px;
+  margin-bottom: 1.25rem;
+}
+
+.hero__title {
+  font-family: var(--font-family-title);
+  font-size: 2.75rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--black);
+  margin-bottom: 1rem;
+}
+
+.hero__subtitle {
+  font-size: 1rem;
+  color: var(--grey);
+  line-height: 1.7;
+  margin-bottom: 2rem;
+  max-width: 440px;
+}
+
+.hero__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* btn-hero-primary   → usar: btn btn-primary   (el tamaño lo da .hero .btn) */
+/* btn-hero-secondary → usar: btn btn-tertiary  (el tamaño lo da .hero .btn) */
+
+/* Tamaño de botones dentro del hero */
+.hero .btn {
+  padding: 12px 28px;
+  font-size: 0.95rem;
+  border-radius: 8px;
+}
+
+/* Decoración hero */
+.hero__deco {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  flex-shrink: 0;
+}
+
+.deco-circle {
+  border-radius: 50%;
+  position: absolute;
+}
+
+.deco-circle--lg {
+  width: 180px;
+  height: 180px;
+  background: var(--primary-orange);
+  opacity: 0.1;
+  top: 0;
+  right: 0;
+}
+
+.deco-circle--sm {
+  width: 100px;
+  height: 100px;
+  background: var(--primary-blue);
+  opacity: 0.12;
+  bottom: 10px;
+  left: 20px;
+}
+
+.deco-dice {
+  position: absolute;
+  font-size: 5rem;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  user-select: none;
+}
+
+/* ── CÓMO FUNCIONA ──────────────────────────── */
+.section-how {
+  background: var(--bg-light);
+  padding: 4rem 0;
+}
+
+.steps {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.step-card {
+  flex: 1;
+  background: var(--white);
+  border-radius: 10px;
+  border: 1px solid #e4e4e4;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  position: relative;
+}
+
+.step-card__icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.step-card__num {
+  display: block;
+  font-family: var(--font-family-title);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--primary-orange);
+  margin-bottom: 0.5rem;
+}
+
+.step-card__title {
+  font-family: var(--font-family-title);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--black);
+  margin-bottom: 0.5rem;
+}
+
+.step-card__text {
+  font-size: 0.875rem;
+  color: var(--grey);
+  line-height: 1.6;
+}
+
+.step-connector {
+  width: 2.5rem;
+  height: 2px;
+  background: #d8d8d8;
+  flex-shrink: 0;
+  margin-top: 6.5rem;
+}
+
+/* ── CATEGORÍAS ─────────────────────────────── */
+.section-categories {
+  padding: 4rem 0;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.cat-pill-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 1.25rem 1rem;
+  background: var(--white);
+  border: 1px solid var(--bg-light);
+  border-radius: 10px;
+  text-decoration: none;
+  transition: border-color 0.2s, background 0.15s;
+}
+
+.cat-pill-card:hover {
+  border-color: var(--primary-orange);
+  background: var(--bg-light);
+  text-decoration: none;
+}
+
+.cat-pill-card__icon {
+  font-size: 1.75rem;
+}
+
+.cat-pill-card__label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--black);
+  font-family: var(--font-family-text);
+  text-align: center;
+}
+
+.cat-pill-card__icon:hover{
+  text-decoration: none;
+}
+
+/* ── FUNCIONALIDADES ────────────────────────── */
+.section-features {
+  padding: 4rem 0;
+  background: var(--bg-light);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.feature-card {
+  background: var(--white);
+  border: 1px solid #e4e4e4;
+  border-radius: 10px;
+  padding: 1.75rem;
+}
+
+.feature-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.feature-card__icon--blue   { background: #e3f2ff; }
+.feature-card__icon--orange { background: #fff0eb; }
+.feature-card__icon--green  { background: #e3fff8; }
+
+.feature-card__title {
+  font-family: var(--font-family-title);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--black);
+  margin-bottom: 0.4rem;
+}
+
+.feature-card__text {
+  font-size: 0.875rem;
+  color: var(--grey);
+  line-height: 1.65;
+}
+
+/* ── CTA FINAL ──────────────────────────────── */
+.section-cta {
+  padding: 5rem 0;
+}
+
+.section-cta__inner {
+  text-align: center;
+}
+
+.section-cta__title {
+  font-family: var(--font-family-title);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--black);
+  margin-bottom: 0.75rem;
+}
+
+.section-cta__subtitle {
+  color: var(--grey);
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+}
+
+/* ── RESPONSIVE ─────────────────────────────── */
+@media (max-width: 768px) {
+  .hero {
+    flex-direction: column;
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+  }
+
+  .hero__subtitle { max-width: 100%; }
+
+  .hero__actions { justify-content: center; }
+
+  .hero__deco {
+    width: 140px;
+    height: 140px;
+  }
+
+  .deco-circle--lg { width: 120px; height: 120px; }
+  .deco-circle--sm { width: 70px; height: 70px; }
+  .deco-dice { font-size: 3.5rem; }
+
+  .hero__title { font-size: 2rem; }
+
+  .steps {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .step-connector { display: none; }
+
+  .categories-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-cta__title { font-size: 1.5rem; }
+
+  .landing-footer__inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-title-main { font-size: 1.4rem; }
+  .hero__title { font-size: 1.75rem; }
+  .categories-grid { grid-template-columns: repeat(2, 1fr); }
+}
