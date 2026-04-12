@@ -1,6 +1,5 @@
 import { createHeader, initHeaderEvents } from "./dom/header.js";
-
-const app = document.getElementById("app");
+import { createFooter } from "./dom/footer.js";
 
 // Crear header
 const header = createHeader();
@@ -10,5 +9,4 @@ document.body.prepend(header);
 initHeaderEvents();
 
 // Crear footer
-import { createFooter } from "./dom/footer.js";
 document.body.appendChild(createFooter());

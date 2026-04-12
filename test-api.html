@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BGG Explorer — Búsqueda</title>
+
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+
+    input  { padding: 8px; width: 250px; }
+    button { padding: 8px 12px; margin-left: 8px; cursor: pointer; }
+
+    /* ── Barra superior ── */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .top-bar h1 { font-size: 1.4rem; margin: 0; }
+
+    .btn-favorites-link {
+      padding: 8px 16px;
+      background: #f39c12;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-decoration: none;
+    }
+    .btn-favorites-link:hover { background: #d68910; }
+
+    /* ── Tarjeta ── */
+    .game-card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+
+    .game-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .game-card-header:hover { background: #fafafa; }
+
+    .game-card-header .card-info { flex: 1; }
+    .game-card-header h3 { margin: 0 0 4px; font-size: 1rem; }
+    .game-card-header p  { margin: 0; font-size: 0.85rem; color: #666; }
+
+    .btn-favorite-header {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      background: #1B9CFC;
+      color: white;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .btn-favorite-header:hover       { background: #0e7de0; }
+    .btn-favorite-header.saved       { background: #e74c3c; }
+    .btn-favorite-header.saved:hover { background: #c0392b; }
+
+    .chevron {
+      font-size: 1.2rem;
+      color: #999;
+      transition: transform 0.3s ease;
+      flex-shrink: 0;
+    }
+    .chevron.open { transform: rotate(180deg); }
+
+    /* ── Panel de detalle ── */
+    .game-detail {
+      display: none;
+      border-top: 1px solid #eee;
+      padding: 16px;
+      background: #fefefe;
+    }
+    .game-detail.open { display: block; }
+
+    .game-detail img.cover {
+      max-width: 180px;
+      border-radius: 8px;
+      float: right;
+      margin-left: 16px;
+      margin-bottom: 8px;
+    }
+
+    .game-detail p      { margin: 5px 0; font-size: 0.88rem; }
+    .game-detail .label { font-weight: bold; }
+    .game-detail .clearfix::after { content: ""; display: block; clear: both; }
+
+    .section-title {
+      margin: 12px 0 5px;
+      font-weight: bold;
+      font-size: 0.88rem;
+      color: #333;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #eee;
+      border-radius: 12px;
+      padding: 2px 10px;
+      margin: 2px;
+      font-size: 0.78rem;
+    }
+
+    .loading { color: #999; font-style: italic; padding: 4px 0; }
+
+    /* ── Filtros ── */
+    .filters {
+      display: none;
+      gap: 16px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 14px;
+    }
+    .filters.visible { display: flex; }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .filter-group label {
+      font-size: 0.78rem;
+      font-weight: bold;
+      color: #555;
+    }
+
+    .filter-group input {
+      padding: 6px 10px;
+      width: auto;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.88rem;
+    }
+
+    .filter-group input:focus { border-color: #1B9CFC; outline: none; }
+
+    .btn-clear-filters {
+      padding: 6px 12px;
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      color: #666;
+      margin-left: 0;
+    }
+    .btn-clear-filters:hover { border-color: #999; color: #333; }
+  </style>
+</head>
+
+<body>
+
+  <div class="top-bar">
+    <h1>🎲 BGG Explorer</h1>
+    <a class="btn-favorites-link" href="favorites.html">⭐ Mis favoritos (<span id="fav-count">0</span>)</a>
+  </div>
+
+  <input type="text" id="searchInput" placeholder="Buscar juego..." />
+  <button id="searchBtn">Buscar</button>
+
+  <div id="status" style="margin-top:10px; color:#666;"></div>
+
+  <!-- Filtros (se muestran tras buscar) -->
+  <div class="filters" id="filters">
+    <div class="filter-group">
+      <label for="filterName">Filtrar por nombre</label>
+      <input type="text" id="filterName" placeholder="ej: junior, card..." />
+    </div>
+    <div class="filter-group">
+      <label for="filterYearFrom">Año de publicación desde</label>
+      <input type="number" id="filterYearFrom" placeholder="ej: 2000" min="1900" max="2100" style="width:130px"/>
+    </div>
+    <div class="filter-group">
+      <label for="filterYearTo">Año de publicación hasta</label>
+      <input type="number" id="filterYearTo" placeholder="ej: 2024" min="1900" max="2100" style="width:130px"/>
+    </div>
+    <button class="btn-clear-filters" id="btnClearFilters">✕ Limpiar filtros</button>
+  </div>
+
+  <div id="results"></div>
+
+  <script type="module">
+    import ApiService from "./js/api/apiService.js";
+    import BoardGame  from "./js/classes/BoardGame.js";
+    import Favorites  from "./js/classes/Favorites.js";
+
+    const api       = new ApiService();
+    const favorites = new Favorites();
+
+    const input      = document.getElementById("searchInput");
+    const button     = document.getElementById("searchBtn");
+    const resultsDiv = document.getElementById("results");
+    const statusDiv  = document.getElementById("status");
+    const favCount   = document.getElementById("fav-count");
+    const filtersDiv = document.getElementById("filters");
+    const filterName = document.getElementById("filterName");
+    const filterYearFrom = document.getElementById("filterYearFrom");
+    const filterYearTo   = document.getElementById("filterYearTo");
+    const btnClearFilters = document.getElementById("btnClearFilters");
+
+    // Guardamos todos los juegos de la búsqueda en memoria
+    let allGames = [];
+
+    function updateFavCount() {
+      favCount.textContent = favorites.count();
+    }
+
+    updateFavCount();
+
+    // ── Filtros ───────────────────────────────────────
+    function applyFilters() {
+      const name    = filterName.value.trim().toLowerCase();
+      const yearFrom = Number(filterYearFrom.value) || null;
+      const yearTo   = Number(filterYearTo.value)   || null;
+
+      const filtered = allGames.filter(game => {
+        const matchName = !name || (game.name ?? "").toLowerCase().includes(name);
+        const year      = Number(game.year) || null;
+        const matchFrom = !yearFrom || (year && year >= yearFrom);
+        const matchTo   = !yearTo   || (year && year <= yearTo);
+        return matchName && matchFrom && matchTo;
+      });
+
+      statusDiv.textContent = filtered.length === allGames.length
+        ? `${allGames.length} resultados. Haz clic en un juego para ver el detalle.`
+        : `${filtered.length} de ${allGames.length} resultados. Haz clic en un juego para ver el detalle.`;
+
+      renderCards(filtered);
+    }
+
+    filterName.addEventListener("input", applyFilters);
+    filterYearFrom.addEventListener("input", applyFilters);
+    filterYearTo.addEventListener("input", applyFilters);
+
+    btnClearFilters.addEventListener("click", () => {
+      filterName.value     = "";
+      filterYearFrom.value = "";
+      filterYearTo.value   = "";
+      applyFilters();
+    });
+
+    // ── Búsqueda ──────────────────────────────────────
+    button.addEventListener("click", async () => {
+      const query = input.value.trim();
+      if (!query) return;
+
+      resultsDiv.innerHTML = "";
+      filtersDiv.classList.remove("visible");
+      statusDiv.textContent = "Buscando...";
+      allGames = [];
+
+      try {
+        const games = await api.searchGamesSimplified(query);
+
+        if (!games.length) {
+          statusDiv.textContent = "No se encontraron resultados.";
+          return;
+        }
+
+        // Guardamos en memoria y mostramos filtros
+        allGames = games;
+        filtersDiv.classList.add("visible");
+        filterName.value     = "";
+        filterYearFrom.value = "";
+        filterYearTo.value   = "";
+
+        statusDiv.textContent = `${games.length} resultados. Haz clic en un juego para ver el detalle.`;
+        renderCards(games);
+
+      } catch (error) {
+        statusDiv.textContent = "Error al buscar. ¿Está arrancado el servidor?";
+        console.error(error);
+      }
+    });
+
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") button.click();
+    });
+
+    // ── Renderizar tarjetas ───────────────────────────
+    function renderCards(games) {
+      resultsDiv.innerHTML = "";
+
+      if (!games.length) {
+        resultsDiv.innerHTML = `<p style="color:#999; margin-top:12px">No hay resultados con los filtros aplicados.</p>`;
+        return;
+      }
+
+      games.forEach(game => {
+        const isFav    = favorites.isFavorite(game.id);
+        const btnLabel = isFav ? "❌ Quitar" : "⭐ Favorito";
+        const btnClass = isFav ? "btn-favorite-header saved" : "btn-favorite-header";
+
+        const card = document.createElement("div");
+        card.classList.add("game-card");
+
+        card.innerHTML = `
+          <div class="game-card-header">
+            <div class="card-info">
+              <h3>${game.name ?? "Sin nombre"}</h3>
+              <p>Año de publicación: ${game.year ?? "—"} &nbsp;|&nbsp; ID: ${game.id}</p>
+            </div>
+            <button class="${btnClass}" data-id="${game.id}">${btnLabel}</button>
+            <span class="chevron">&#8964;</span>
+          </div>
+          <div class="game-detail"></div>
+        `;
+
+        const header      = card.querySelector(".game-card-header");
+        const detailPanel = card.querySelector(".game-detail");
+        const chevron     = card.querySelector(".chevron");
+        const btnFav      = card.querySelector(".btn-favorite-header");
+
+        header.addEventListener("click", () => {
+          const isOpen = detailPanel.classList.toggle("open");
+          chevron.classList.toggle("open", isOpen);
+          if (isOpen && detailPanel.innerHTML === "") {
+            loadDetail(game.id, detailPanel);
+          }
+        });
+
+        btnFav.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          await toggleFavorite(game.id, btnFav);
+        });
+
+        resultsDiv.appendChild(card);
+      });
+    }
+
+    // ── Detalle ───────────────────────────────────────
+    async function loadDetail(id, panel) {
+      panel.innerHTML = `<p class="loading">Cargando detalle...</p>`;
+
+      try {
+        const data = await api.getGameSimplified(id);
+        const game = new BoardGame(data);
+
+        panel.innerHTML = `
+          <div class="clearfix">
+            ${game.image ? `<img class="cover" src="${game.image}" alt="${game.name}"/>` : ""}
+            <p><span class="label">ID:</span> ${game.id}</p>
+            <p><span class="label">Año:</span> ${game.year ?? "—"}</p>
+            <p><span class="label">Jugadores:</span> ${game.getPlayers()}</p>
+            <p><span class="label">Duración:</span> ${game.getPlaytime()}</p>
+            <p><span class="label">Edad mínima:</span> ${game.getMinAge()}</p>
+            <p><span class="label">Puntuación media:</span> ★ ${game.getRating()} &nbsp;(${game.getVotes()} votos)</p>
+            <p><span class="label">Peso/Complejidad:</span> ${game.getWeight()}</p>
+            <p><span class="label">Ranking BGG:</span> ${game.getRank()}</p>
+            <p><span class="label">Idioma:</span> ${game.language?.join(", ") || "No especificado"}</p>
+            <p class="section-title">Descripción</p>
+            <p style="color:#555; line-height:1.6">${game.getDescription()}</p>
+            <p class="section-title">Categorías</p>
+            <div>${game.categories.map(c => `<span class="tag">${c}</span>`).join("") || "—"}</div>
+            <p class="section-title">Mecánicas</p>
+            <div>${game.mechanics.map(m => `<span class="tag">${m}</span>`).join("") || "—"}</div>
+            <p class="section-title">Editoriales</p>
+            <div>${game.publishers.slice(0, 10).map(p => `<span class="tag">${p}</span>`).join("") || "—"}</div>
+          </div>
+        `;
+
+      } catch (error) {
+        panel.innerHTML = `<p class="loading">Error al cargar el detalle.</p>`;
+        console.error(error);
+      }
+    }
+
+    // ── Favoritos ─────────────────────────────────────
+    async function toggleFavorite(id, btn) {
+      if (favorites.isFavorite(id)) {
+        favorites.remove(id);
+        btn.textContent = "⭐ Favorito";
+        btn.classList.remove("saved");
+      } else {
+        btn.textContent = "...";
+        btn.disabled = true;
+        try {
+          const data = await api.getGameSimplified(id);
+          const game = new BoardGame(data);
+          favorites.add(game);
+          btn.textContent = "❌ Quitar";
+          btn.classList.add("saved");
+        } catch {
+          btn.textContent = "⭐ Favorito";
+        } finally {
+          btn.disabled = false;
+        }
+      }
+      updateFavCount();
+    }
+
+  </script>
+
+</body>
+</html>
