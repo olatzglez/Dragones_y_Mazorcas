@@ -2,19 +2,30 @@
 .header {
   background: var(--white);
   color: var(--black);
-  padding: 10px;
+  border-bottom: 1px solid var(--bg-light);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .header__container {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.75rem 1.5rem;
 }
 
 .header__actions {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.header a {
+  font-family: var(--font-family-title);
+  font-weight: 500;
 }
 
 .nav {
@@ -28,33 +39,24 @@
 }
 
 @media (max-width: 768px) {
+  .hero_inner {
+    justify-content: center;
+  }
+
   .nav {
     display: none;
     flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--white);
+    border-bottom: 1px solid var(--bg-light);
+    padding: 1rem 1.5rem;
+    gap: 12px;
+    z-index: 99;
   }
   .nav.nav--open { display: flex; }
   .menu-toggle { display: block; }
-}
-
-/* ── BOTONES ────────────────────────────────── */
-
-.btn-login {
-  padding: 6px 14px;
-  background: #f39c12;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.88rem;
-}
-
-.btn-login:hover { background: #d68910; }
-
-.btn-darkmode {
-  background: transparent;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 6px 10px;
-  cursor: pointer;
-  font-size: 1rem;
+  .header { position: relative; }
 }

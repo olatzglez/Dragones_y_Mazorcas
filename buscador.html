@@ -3,74 +3,80 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BGG Explorer — Búsqueda</title>
-  <link rel="stylesheet" href="./src/css/styles.css" />
+  <title>Dragones y Mazorcas - Explorar juegos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./src/css/styles.css" />
 </head>
 
 <body>
   <div id="header-root"></div>
 
-  <div class="top-bar">
-    <h2>Descubre un nuevo juego</h1>
-    <a class="btn-favorites-link" href="favorites.html">⭐ Mis favoritos (<span id="fav-count">0</span>)</a>
-  </div>
+  <section class="section-how">
+    <div class="container">
+      <div class="top-bar">
+        <h2 class="section-title-main">Descubre un nuevo juego</h2>
+        <a class="btn btn-secondary" href="favorites.html">⭐ Mis favoritos (<span id="fav-count">0</span>)</a>
+      </div>
 
-  <div class="search-bar">
-    <div class="filter-group">
-      <label for="searchInput">Buscar juego por nombre</label>
-      <input type="text" id="searchInput" placeholder="Buscar juego..." />
-    </div>
-    <button id="searchBtn">Buscar</button>
-  </div>
+      <div class="search-bar">
+        <div class="filter-group">
+          <label for="searchInput">Buscar juego por nombre</label>
+          <input type="text" id="searchInput" placeholder="Buscar juego..." />
+        </div>
+        <button class="btn btn-primary" id="searchBtn">Buscar</button>
+      </div>
+    
+      <div id="status" class="status-msg"></div>
 
-  <div id="status" class="status-msg"></div>
+      <p class="filters-hint" id="filtersHint">
+        Realiza una búsqueda por nombre para activar los filtros.
+      </p>
 
-  <p class="filters-hint" id="filtersHint">
-    Realiza una búsqueda por nombre para activar los filtros.
-  </p>
+      <div class="filters visible" id="filters">
+        <div class="filter-group">
+          <label for="filterPlayers">Nº jugadores</label>
+          <input type="number" id="filterPlayers" placeholder="ej: 4" min="1" max="10" disabled
+            title="Se activará cuando realices una búsqueda inicial por nombre"/>
+        </div>
+        <div class="filter-group">
+          <label for="filterMinAge">Edad mínima</label>
+          <input type="number" id="filterMinAge" placeholder="ej: 8" min="0" max="18" disabled
+            title="Se activará cuando realices una búsqueda inicial por nombre"/>
+        </div>
+        <div class="filter-group">
+          <label for="filterDurationMax">Duración máx. (min)</label>
+          <input type="number" id="filterDurationMax" placeholder="ej: 60" min="0" disabled
+            title="Se activará cuando realices una búsqueda inicial por nombre"/>
+        </div>
+        <div class="filter-group">
+          <label for="filterCategory">Categoría</label>
+          <input type="text" id="filterCategory" placeholder="ej: Strategy..." disabled
+            title="Se activará cuando realices una búsqueda inicial por nombre"/>
+        </div>
+        <div class="filter-group">
+          <label for="filterComplexityMax">Complejidad máx.</label>
+          <input type="number" id="filterComplexityMax" placeholder="ej: 3" min="1" max="5" step="0.5" disabled
+            title="Se activará cuando realices una búsqueda inicial por nombre"/>
+        </div>
+        <div class="filter-group">
+          <label for="filterYearFrom">Año desde</label>
+          <input type="number" id="filterYearFrom" placeholder="ej: 2000" min="1900" max="2100" disabled
+            title="Se activará cuando realices una búsqueda inicial por nombre"/>
+        </div>
+        <div class="filter-group">
+          <label for="filterYearTo">Año hasta</label>
+          <input type="number" id="filterYearTo" placeholder="ej: 2024" min="1900" max="2100" disabled
+            title="Se activará cuando realices una búsqueda inicial por nombre"/>
+        </div>
+        <button class="btn btn-tertiary" id="btnClearFilters" disabled
+          title="Se activará cuando realices una búsqueda inicial por nombre">✕ Limpiar</button>
+      </div>
 
-  <div class="filters visible" id="filters">
-    <div class="filter-group">
-      <label for="filterPlayers">Nº jugadores</label>
-      <input type="number" id="filterPlayers" placeholder="ej: 4" min="1" max="10" disabled
-        title="Se activará cuando realices una búsqueda inicial por nombre"/>
+      <div id="results"></div>
     </div>
-    <div class="filter-group">
-      <label for="filterMinAge">Edad mínima</label>
-      <input type="number" id="filterMinAge" placeholder="ej: 8" min="0" max="18" disabled
-        title="Se activará cuando realices una búsqueda inicial por nombre"/>
-    </div>
-    <div class="filter-group">
-      <label for="filterDurationMax">Duración máx. (min)</label>
-      <input type="number" id="filterDurationMax" placeholder="ej: 60" min="0" disabled
-        title="Se activará cuando realices una búsqueda inicial por nombre"/>
-    </div>
-    <div class="filter-group">
-      <label for="filterCategory">Categoría</label>
-      <input type="text" id="filterCategory" placeholder="ej: Strategy..." disabled
-        title="Se activará cuando realices una búsqueda inicial por nombre"/>
-    </div>
-    <div class="filter-group">
-      <label for="filterComplexityMax">Complejidad máx.</label>
-      <input type="number" id="filterComplexityMax" placeholder="ej: 3" min="1" max="5" step="0.5" disabled
-        title="Se activará cuando realices una búsqueda inicial por nombre"/>
-    </div>
-    <div class="filter-group">
-      <label for="filterYearFrom">Año desde</label>
-      <input type="number" id="filterYearFrom" placeholder="ej: 2000" min="1900" max="2100" disabled
-        title="Se activará cuando realices una búsqueda inicial por nombre"/>
-    </div>
-    <div class="filter-group">
-      <label for="filterYearTo">Año hasta</label>
-      <input type="number" id="filterYearTo" placeholder="ej: 2024" min="1900" max="2100" disabled
-        title="Se activará cuando realices una búsqueda inicial por nombre"/>
-    </div>
-    <button class="btn-clear-filters" id="btnClearFilters" disabled
-      title="Se activará cuando realices una búsqueda inicial por nombre">✕ Limpiar</button>
-  </div>
-
-  <div id="results"></div>
-
+    </section>
   <div id="footer-root"></div>
 
   <script type="module">
@@ -152,7 +158,9 @@
       games.forEach(game => {
         const isFav    = favorites.isFavorite(game.id);
         const btnLabel = isFav ? "❌ Quitar" : "⭐ Favorito";
-        const btnClass = isFav ? "btn-favorite-header saved" : "btn-favorite-header";
+        const btnClass = isFav
+          ? "btn btn-danger btn-favorite-header"
+          : "btn btn-secondary btn-favorite-header";
 
         const card = document.createElement("div");
         card.classList.add("game-card");
@@ -227,7 +235,8 @@
       if (favorites.isFavorite(id)) {
         favorites.remove(id);
         btn.textContent = "⭐ Favorito";
-        btn.classList.remove("saved");
+        btn.classList.remove("btn-danger");
+        btn.classList.add("btn-secondary");
       } else {
         btn.textContent = "...";
         btn.disabled = true;
@@ -236,7 +245,8 @@
           const game = new BoardGame(data);
           favorites.add(game);
           btn.textContent = "❌ Quitar";
-          btn.classList.add("saved");
+          btn.classList.remove("btn-secondary");
+          btn.classList.add("btn-danger");
         } catch {
           btn.textContent = "⭐ Favorito";
         } finally {

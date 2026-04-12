@@ -3,46 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mis Favoritos — BoardGames Finder</title>
+  <title>Dragones y Mazorcas - Mis Favoritos</title>
   <link rel="stylesheet" href="./src/css/styles.css" />
 </head>
 
 <body>
   <div id="header-root"></div>
 
-  <main class="favorites-main">
-
-    <!-- ── Sección: Mis favoritos ────────────────────────────── -->
-    <div class="section-header" id="favs-header">
-      <h2>⭐ Mis favoritos</h2>
-      <span class="section-chevron open" id="favs-chevron">&#8964;</span>
-    </div>
-    <div class="section-body open" id="favs-body">
-      <p id="status" class="status-msg"></p>
-      <div id="favorites-list"></div>
-    </div>
-
-    <!-- ── Sección: Tabla comparativa ─────────────────────────── -->
-    <div class="compare-section">
-      <div class="section-header" id="compare-header">
-        <h2>📊 Tabla comparativa</h2>
-        <span class="section-chevron open" id="compare-chevron">&#8964;</span>
+  <section class="favorites-main section-how">
+    <div class="container">
+      <!-- ── Sección: Mis favoritos ────────────────────────────── -->
+      <div class="section-header" id="favs-header">
+        <h2 class="section-title-main">Mis favoritos</h2>
+        <span class="section-chevron open" id="favs-chevron">&#8964;</span>
       </div>
-      <div class="section-body open" id="compare-body">
-        <div class="compare-toolbar">
-          <p class="compare-subtitle">
-            Haz clic en una columna para ordenar. Vuelve a hacer clic para invertir el orden.
-          </p>
-          <div class="compare-actions">
-            <button class="btn-export" id="btn-export-pdf">Exportar a PDF</button>
-            <button class="btn-export" id="btn-export-csv">Exportar a CSV</button>
-          </div>
+      <div class="section-body open" id="favs-body">
+        <p id="status" class="status-msg"></p>
+        <div id="favorites-list"></div>
+      </div>
+
+      <!-- ── Sección: Tabla comparativa ─────────────────────────── -->
+      <div class="compare-section">
+        <div class="section-header" id="compare-header">
+          <h2>Tabla comparativa</h2>
+          <span class="section-chevron open" id="compare-chevron">&#8964;</span>
         </div>
-        <div id="compare-container"></div>
+        <div class="section-body open" id="compare-body">
+          <div class="compare-toolbar">
+            <p class="compare-subtitle">
+              Haz clic en una columna para ordenar. Vuelve a hacer clic para invertir el orden.
+            </p>
+            <div class="compare-actions">
+              <button class="btn btn-secondary" id="btn-export-pdf">Exportar a PDF</button>
+              <button class="btn btn-secondary" id="btn-export-csv">Exportar a CSV</button>
+            </div>
+          </div>
+          <div id="compare-container"></div>
+        </div>
       </div>
     </div>
-
-  </main>
+  </section>
 
   <div id="footer-root"></div>
 
@@ -230,7 +230,7 @@
               <h3>${game.name ?? "Sin nombre"}</h3>
               <p>Año: ${game.year ?? "—"} &nbsp;|&nbsp; ID: ${game.id}</p>
             </div>
-            <button class="btn-favorite-header saved" data-id="${game.id}">❌ Quitar</button>
+            <button class="btn btn-danger btn-favorite-header" data-id="${game.id}">❌ Quitar</button>
             <span class="chevron">&#8964;</span>
           </div>
           <div class="game-detail">

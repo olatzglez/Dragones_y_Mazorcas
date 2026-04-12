@@ -1,1 +1,174 @@
-@import url('./styles.css');
+/* ══════════════════════════════════════════════
+   DARKMODE.CSS
+   Se activa añadiendo la clase .dark-mode al <body>.
+   Solo sobreescribe variables — los componentes
+   se adaptan solos porque usan var(--...).
+   ══════════════════════════════════════════════ */
+
+body.dark-mode {
+
+  /* ── Colores base ───────────────────────────── */
+  --white:      #030303;   /* superficies: fondo de cards, header, etc. */
+  --black:      #F0EDE8;   /* texto principal */
+  --bg-light:   #2C2C2C;   /* fondos secundarios, bordes, hover */
+  --grey:       #A09A9C;   /* texto secundario, iconos */
+
+  /* ── Acento ─────────────────────────────────── */
+  --primary-orange: #FF6B3D;   /* ligeramente más claro para contrastar en oscuro */
+  --light-orange:   #C8A882;
+
+  /* ── Semánticos (sin cambio) ────────────────── */
+  --primary-blue:  #1B9CFC;
+  --primary-green: #1BF2C7;
+  --red-error:     #F21B2D;
+}
+
+/* ENCABEZADOS */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--black);
+}
+
+/* HERO */
+body.dark-mode .hero .hero__title, 
+body.dark-mode .hero .hero__subtitle {
+  color: var(--black);
+}
+
+/* ── Ajustes puntuales que las variables no cubren ── */
+
+/* Header */
+body.dark-mode .header {
+  border-bottom-color: var(--bg-light);
+}
+
+/* Nav móvil desplegado */
+body.dark-mode .nav {
+  background: var(--white);
+  border-bottom-color: var(--bg-light);
+}
+
+/* Inputs */
+body.dark-mode .search-bar input,
+body.dark-mode .filter-group input {
+  background: var(--bg-light);
+  color: var(--black);
+  border-color: #444;
+  min-width: 200px;
+}
+
+body.dark-mode .search-bar input::placeholder,
+body.dark-mode .filter-group input::placeholder {
+  color: var(--grey);
+}
+
+/* Cards */
+body.dark-mode .boardgame-card,
+body.dark-mode .game-card,
+body.dark-mode .game-detail,
+body.dark-mode .filters,
+body.dark-mode .step-card,
+body.dark-mode .feature-card {
+  border-color: #3a3a3a;
+}
+
+body.dark-mode .step-card,
+body.dark-mode .feature-card {
+  background-color:var(--bg-light);
+  color: var(--black);
+}
+
+body.dark-mode .step-card__text,
+body.dark-mode .feature-card__text,
+body.dark-mode .section-cta__subtitle  {
+  color: var(--black);
+}
+
+/* Tabla comparativa */
+body.dark-mode .compare-table-wrap {
+  border-color: #3a3a3a;
+}
+
+body.dark-mode .compare-table th {
+  background: var(--white);
+}
+
+body.dark-mode .compare-table th:hover {
+  background: var(--white);
+}
+
+body.dark-mode .compare-table th.sortable:hover {
+  filter: brightness(1.15);
+}
+
+/* Tags */
+body.dark-mode .tag {
+  color: var(--black);
+}
+
+/* Step connector */
+body.dark-mode .step-connector {
+  background: #444;
+}
+
+/* Hero eyebrow pill */
+body.dark-mode .hero__eyebrow {
+  background: rgba(255, 107, 61, 0.15);
+  color: var(--primary-orange);
+}
+
+/* Categorías landing */
+body.dark-mode .cat-pill-card:hover {
+  background: var(--bg-light);
+}
+
+/* Feature icons */
+body.dark-mode .feature-card__icon--blue   { background: #1a2e3d; }
+body.dark-mode .feature-card__icon--orange { background: #2e1a14; }
+body.dark-mode .feature-card__icon--green  { background: #0f2520; }
+
+/* Sección how / features */
+body.dark-mode .section-how,
+body.dark-mode .section-features {
+  background: var(--white);
+}
+
+body.dark-mode .section-cta {
+  background: var(--bg-light);
+}
+
+/* FILTROS */
+.filters-hint {
+  color: var(--black);
+}
+
+/* Botón darkmode: indica el modo activo */
+body.dark-mode #btnDarkmode {
+  border-color: var(--grey);
+  color: var(--black);
+}
+
+/* BOTONES */
+.btn-danger {
+  background: var(--white);
+  border-color: var(--red-error);
+  color: var(--red-error);
+}
+
+/* Sección categories y CTA */
+body.dark-mode .section-categories,
+body.dark-mode .section-cta {
+  background: #181818;
+}
+
+/* Footer */
+body.dark-mode .footer {
+  background: var(--white);
+}
+
+body.dark-mode .footer span {
+  color: var(--grey);
+}
+
+.footer__desc {
+  color: var(--black);
+}

@@ -12,7 +12,7 @@ export function createFooter() {
         </div>
       </div>
       <div class="footer__col">
-        <h4>La app</h4>
+        <span>LA APP</span>
         <ul>
           <li><a href="#">Quiénes somos</a></li>
           <li><a href="#">Contacto</a></li>
@@ -20,7 +20,7 @@ export function createFooter() {
         </ul>
       </div>
       <div class="footer__col">
-        <h4>Legal</h4>
+        <span>LEGAL</span>
         <ul>
           <li><a href="#">Privacidad</a></li>
           <li><a href="#">Cookies</a></li>
@@ -29,7 +29,7 @@ export function createFooter() {
       </div>
     </div>
     <div class="footer__bottom">
-      <p>© 2026 BoardGames Finder · Olatz González</p>
+      <p>© Dragones y Mazorcas 2026 · Olatz González</p>
       <a class="footer__top" href="#">Subir ↑</a>
     </div>
   `;

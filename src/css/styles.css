@@ -1,17 +1,21 @@
 @import url('./header.css');
 @import url('./footer.css');
 @import url('./components.css');
+@import url('./landing.css');
+@import url('./darkmode.css');
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&family=Roboto:wght@400;500&display=swap');
 
 /* ── VARIABLES GLOBALES ─────────────────────── */
 :root {
-  --primary-orange:    #F2541B;
+  --primary-orange:    #E0340D;
   --primary-blue:      #1B9CFC;
   --primary-green:     #1BF2C7;
-  --bg-light:          #F2F2F2;
-  --white:             #FEFFFE;
+  --bg-light:          #f9d6cf;
+  --white:             #FFFFFF;
   --black:             #1C1D1C;
   --grey:              #40383C;
-  --red-error:         #F21B2D;
+  --red-error:         #D90315;
+  --light-orange:      #A08060;
   --font-family-title: 'Kanit', Arial, sans-serif;
   --font-family-text:  'Roboto', Arial, sans-serif;
   --font-size-text:    1rem;
@@ -22,4 +26,52 @@
   margin: 0;
   padding: 0;
   font-family: var(--font-family-text);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-title);
+  font-weight: normal;
+}
+
+h1 {
+  font-size: 2.25rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.75rem;
+}
+
+h4 {
+  font-size: 1.5rem;
+}
+
+h5 {
+  font-size: 1.25rem;
+}
+
+h6 {
+  font-size: 1rem;
+}
+
+p {
+  font-family: var(--font-family-text);
+}
+
+/* ── ENLACES ───────────────────────────────── */
+a {
+  font-size: 1rem;
+  min-height: 44px;
+  min-width: 44px;
+  align-content: center;
+  text-decoration: none;
+  color: var(--primary-orange);
+  font-family: var(--font-family-text);
+}
+
+a:hover, a:focus {
+  text-decoration: underline;;
 }
