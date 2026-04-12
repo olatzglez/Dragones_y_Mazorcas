@@ -19,6 +19,7 @@
   margin: 0;
 }
 
+
 @media (max-width: 480px) {
   .logo__text {
     display: none;
@@ -257,7 +258,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
 }
 
 .top-bar h1 {
@@ -287,7 +287,7 @@
 
 /* ── GAME CARD ───────────────────────────────── */
 .game-card {
-  background: var(--white);
+  background: var(--bg-light);
   border: 1px solid var(--bg-light);
   border-radius: 8px;
   margin-top: 10px;
