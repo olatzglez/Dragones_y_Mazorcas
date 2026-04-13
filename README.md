@@ -77,7 +77,7 @@ getGame()                 getPlaytime()            remove(id)
 ```
 IndividualJS/
 ├── docs/
-│   ├── memoria.md               # Memoria técnica del proyecto
+│   ├── memoria.pdf               # Memoria técnica del proyecto
 │   └── README.md
 ├── js/
 │   ├── api/
