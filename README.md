@@ -4,7 +4,7 @@
 
 **Autora:** Olatz González  
 **Módulo:** JavaScript — Proyecto Individual · Bootcamp Full Stack  
-**Repositorio:** [github.com/olatzglez/IndividualJS](https://github.com/olatzglez/IndividualJS)
+**Repositorio:** [github.com/olatzglez/IndividualJS](https://github.com/olatzglez/Dragones_y_Mazorcas)
 
 ---
 
