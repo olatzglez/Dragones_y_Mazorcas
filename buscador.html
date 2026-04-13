@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dragones y Mazorcas - Explorar juegos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./src/css/styles.css" />
+    <link rel="icon" type="image/x-icon" href="./src/assets/icons/favicon.ico">
+</head>
+
+<body>
+  <div id="header-root"></div>
+
+  <section class="section-categories">
+    <div class="container">
+      <div class="top-bar">
+        <h2 class="section-title-main">Descubre un nuevo juego</h2>
+        <a class="btn btn-secondary" href="favorites.html">⭐ Mis favoritos (<span id="fav-count">0</span>)</a>
+      </div>
+
+      <div class="search-bar">
+        <div class="filter-group">
+          <label for="searchInput">Buscar juego por nombre</label>
+          <input type="text" id="searchInput" placeholder="Buscar juego..." />
+        </div>
+        <button class="btn btn-primary" id="searchBtn">Buscar</button>
+      </div>
+    
+      <div id="status" class="status-msg"></div>
+
+      <p class="filters-hint" id="filtersHint">
+        Realiza una búsqueda por nombre para activar los filtros.
+      </p>
+
+      <div class="filters visible" id="filters">
+        <div class="filter-group">
+          <label for="filterPlayers">Nº jugadores</label>
+          <input type="number" id="filterPlayers" placeholder="ej: 4" min="1" max="10" disabled
+            title="Se activará cuando realices una búsqueda inicial por nombre"/>
+        </div>
+        <div class="filter-group">
+          <label for="filterMinAge">Edad mínima</label>
+          <input type="number" id="filterMinAge" placeholder="ej: 8" min="0" max="18" disabled
+            title="Se activará cuando realices una búsqueda inicial por nombre"/>
+        </div>
+        <div class="filter-group">
+          <label for="filterDurationMax">Duración máx. (min)</label>
+          <input type="number" id="filterDurationMax" placeholder="ej: 60" min="0" disabled
+            title="Se activará cuando realices una búsqueda inicial por nombre"/>
+        </div>
+        <div class="filter-group">
+          <label for="filterCategory">Categoría</label>
+          <input type="text" id="filterCategory" placeholder="ej: Strategy..." disabled
+            title="Se activará cuando realices una búsqueda inicial por nombre"/>
+        </div>
+        <div class="filter-group">
+          <label for="filterComplexityMax">Complejidad máx.</label>
+          <input type="number" id="filterComplexityMax" placeholder="ej: 3" min="1" max="5" step="0.5" disabled
+            title="Se activará cuando realices una búsqueda inicial por nombre"/>
+        </div>
+        <div class="filter-group">
+          <label for="filterYearFrom">Año desde</label>
+          <input type="number" id="filterYearFrom" placeholder="ej: 2000" min="1900" max="2100" disabled
+            title="Se activará cuando realices una búsqueda inicial por nombre"/>
+        </div>
+        <div class="filter-group">
+          <label for="filterYearTo">Año hasta</label>
+          <input type="number" id="filterYearTo" placeholder="ej: 2024" min="1900" max="2100" disabled
+            title="Se activará cuando realices una búsqueda inicial por nombre"/>
+        </div>
+        <button class="btn btn-tertiary" id="btnClearFilters" disabled
+          title="Se activará cuando realices una búsqueda inicial por nombre">✕ Limpiar</button>
+      </div>
+
+      <div id="results"></div>
+    </div>
+    </section>
+  <div id="footer-root"></div>
+
+  <script type="module">
+    import ApiService from "./js/api/apiService.js";
+    import BoardGame  from "./js/classes/BoardGame.js";
+    import Favorites  from "./js/classes/Favorites.js";
+    import { createHeader, initHeaderEvents } from "./js/dom/header.js";
+    import { createFooter } from "./js/dom/footer.js";
+    import { initFilters } from "./js/dom/filters.js";
+
+    // ── Header y footer ───────────────────────────────
+    document.getElementById("header-root").appendChild(createHeader());
+    initHeaderEvents();
+    document.getElementById("footer-root").appendChild(createFooter());
+
+    const api       = new ApiService();
+    const favorites = new Favorites();
+
+    const input      = document.getElementById("searchInput");
+    const button     = document.getElementById("searchBtn");
+    const resultsDiv = document.getElementById("results");
+    const statusDiv  = document.getElementById("status");
+    const favCount   = document.getElementById("fav-count");
+
+    let allGames = [];
+
+    function updateFavCount() {
+      favCount.textContent = favorites.count();
+    }
+    updateFavCount();
+
+    // ── Activar filtros tras búsqueda ─────────────────
+    function enableFilters() {
+      document.querySelectorAll(".filters input, .filters button")
+        .forEach(el => el.disabled = false);
+      document.getElementById("filtersHint").style.display = "none";
+    }
+
+    // ── Inicializar filtros ───────────────────────────
+    initFilters(() => allGames, renderCards);
+
+    // ── Búsqueda ──────────────────────────────────────
+    button.addEventListener("click", async () => {
+      const query = input.value.trim();
+      if (!query) return;
+
+      resultsDiv.innerHTML = "";
+      statusDiv.textContent = "Buscando...";
+      allGames = [];
+
+      try {
+        const games = await api.searchGamesSimplified(query);
+        if (!games.length) {
+          statusDiv.textContent = "No se encontraron resultados.";
+          return;
+        }
+        allGames = games;
+        enableFilters();
+        statusDiv.textContent = `${games.length} resultados. Haz clic en un juego para ver el detalle.`;
+        renderCards(games);
+      } catch (error) {
+        statusDiv.textContent = "Error al buscar. ¿Está arrancado el servidor?";
+        console.error(error);
+      }
+    });
+
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") button.click();
+    });
+
+    // ── Renderizar tarjetas ───────────────────────────
+    function renderCards(games) {
+      resultsDiv.innerHTML = "";
+      if (!games.length) {
+        resultsDiv.innerHTML = `<p class="status-msg">No hay resultados con los filtros aplicados.</p>`;
+        return;
+      }
+
+      games.forEach(game => {
+        const isFav    = favorites.isFavorite(game.id);
+        const btnLabel = isFav ? "❌ Quitar" : "⭐ Favorito";
+        const btnClass = isFav
+          ? "btn btn-danger btn-favorite-header"
+          : "btn btn-secondary btn-favorite-header";
+
+        const card = document.createElement("div");
+        card.classList.add("game-card");
+        card.innerHTML = `
+          <div class="game-card-header">
+            <div class="card-info">
+              <h3>${game.name ?? "Sin nombre"}</h3>
+              <p>Año: ${game.year ?? "—"} &nbsp;|&nbsp; ID: ${game.id}</p>
+            </div>
+            <button class="${btnClass}" data-id="${game.id}">${btnLabel}</button>
+            <span class="chevron">&#8964;</span>
+          </div>
+          <div class="game-detail"></div>
+        `;
+
+        const cardHeader  = card.querySelector(".game-card-header");
+        const detailPanel = card.querySelector(".game-detail");
+        const chevron     = card.querySelector(".chevron");
+        const btnFav      = card.querySelector(".btn-favorite-header");
+
+        cardHeader.addEventListener("click", () => {
+          const isOpen = detailPanel.classList.toggle("open");
+          chevron.classList.toggle("open", isOpen);
+          if (isOpen && detailPanel.innerHTML === "") loadDetail(game.id, detailPanel);
+        });
+
+        btnFav.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          await toggleFavorite(game.id, btnFav);
+        });
+
+        resultsDiv.appendChild(card);
+      });
+    }
+
+    // ── Detalle ───────────────────────────────────────
+    async function loadDetail(id, panel) {
+      panel.innerHTML = `<p class="loading">Cargando detalle...</p>`;
+      try {
+        const data = await api.getGameSimplified(id);
+        const game = new BoardGame(data);
+        panel.innerHTML = `
+          <div class="clearfix">
+            ${game.image ? `<img class="game-detail__cover" src="${game.image}" alt="${game.name}"/>` : ""}
+            <p><span class="label">ID:</span> ${game.id}</p>
+            <p><span class="label">Año:</span> ${game.year ?? "—"}</p>
+            <p><span class="label">Jugadores:</span> ${game.getPlayers()}</p>
+            <p><span class="label">Duración:</span> ${game.getPlaytime()}</p>
+            <p><span class="label">Edad mínima:</span> ${game.getMinAge()}</p>
+            <p><span class="label">Puntuación media:</span> ★ ${game.getRating()} (${game.getVotes()} votos)</p>
+            <p><span class="label">Peso/Complejidad:</span> ${game.getWeight()}</p>
+            <p><span class="label">Ranking BGG:</span> ${game.getRank()}</p>
+            <p><span class="label">Idioma:</span> ${game.language?.join(", ") || "No especificado"}</p>
+            <p class="section-title">Descripción</p>
+            <p class="game-detail__description">${game.getDescription()}</p>
+            <p class="section-title">Categorías</p>
+            <div>${game.categories.map(c => `<span class="tag">${c}</span>`).join("") || "—"}</div>
+            <p class="section-title">Mecánicas</p>
+            <div>${game.mechanics.map(m => `<span class="tag">${m}</span>`).join("") || "—"}</div>
+            <p class="section-title">Editoriales</p>
+            <div>${game.publishers.slice(0, 10).map(p => `<span class="tag">${p}</span>`).join("") || "—"}</div>
+          </div>
+        `;
+      } catch (error) {
+        panel.innerHTML = `<p class="loading">Error al cargar el detalle.</p>`;
+        console.error(error);
+      }
+    }
+
+    // ── Favoritos ─────────────────────────────────────
+    async function toggleFavorite(id, btn) {
+      if (favorites.isFavorite(id)) {
+        favorites.remove(id);
+        btn.textContent = "⭐ Favorito";
+        btn.classList.remove("btn-danger");
+        btn.classList.add("btn-secondary");
+      } else {
+        btn.textContent = "...";
+        btn.disabled = true;
+        try {
+          const data = await api.getGameSimplified(id);
+          const game = new BoardGame(data);
+          favorites.add(game);
+          btn.textContent = "❌ Quitar";
+          btn.classList.remove("btn-secondary");
+          btn.classList.add("btn-danger");
+        } catch {
+          btn.textContent = "⭐ Favorito";
+        } finally {
+          btn.disabled = false;
+        }
+      }
+      updateFavCount();
+    }
+
+  </script>
+</body>
+</html>
